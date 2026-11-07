@@ -1,21 +1,33 @@
 <!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Cozy Cat Town 🐱</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="css/style.css?v=6">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<link rel="stylesheet" href="css/style.css?v=10">
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 </head><body>
 <canvas id="c"></canvas><div id="labels"></div>
 <div id="top"><div class="pill lvl"><b id="lv">1</b><div class="xp"><i id="xpb"></i></div></div><div class="pill">🪙 <span id="coins">0</span></div><div class="pill" id="clock">☀️ 08:00</div></div>
-<div id="quick"><button data-a="open" data-id="journey">🧭 Jornada</button><button data-a="open" data-id="delivery">📦 Pelicano</button></div>
+<div id="quick"><button data-a="open" data-id="shop">🌱 Loja</button><button data-a="open" data-id="journey">🧭 Jornada</button><button data-a="open" data-id="delivery">📦 Pelicano</button></div>
 <div id="dock">
  <button data-a="open" data-id="inv">🧺<small>Inventário</small></button>
  <button data-a="open" data-id="cats">🐱<small>Gatos</small></button>
  <button data-a="open" data-id="build">🏗️<small>Construir</small></button>
  <button data-a="open" data-id="decor">🌸<small>Decorar</small></button>
+ <button data-a="moveMode" id="move-mode" aria-pressed="false">↔<small>Mover</small></button>
  <button data-a="open" data-id="miss">📜<small>Missões</small><em id="badge" hidden></em></button>
  <button data-a="open" data-id="set">⚙️<small>Opções</small></button>
 </div>
 <div id="bar" hidden></div><div id="toasts"></div>
 <div id="panel" hidden><div class="card"><div class="ph"><span id="pt"></span><button data-a="close">✖</button></div><div id="pb"></div></div></div>
-<div id="loading"><h1>🐱 Cozy Cat Town</h1><p>Carregando gatinhos…</p><div class="lbar"><i id="loadbar"></i></div></div>
-<script type="module" src="js/main.js?v=6"></script>
+<div id="start-screen">
+ <section class="start-card">
+  <div class="start-art" aria-hidden="true"><span>🌳</span><span>🐱</span><span>🌷</span><span>🐈</span><span>🍓</span></div>
+  <p class="eyebrow">UMA VILA FEITA COM CARINHO</p><h1>Cozy Cat Town</h1>
+  <p class="start-copy">Cuide dos seus gatinhos, plante um jardim e construa um cantinho só seu.</p>
+  <button id="continue" class="start-button continue" data-a="continueGame">Continuar</button>
+  <button class="start-button new" data-a="newGame">Novo jogo</button>
+  <button class="start-button settings" data-a="titleSettings">⚙ Configurações</button>
+  <small class="save-hint">Seu progresso é salvo automaticamente neste dispositivo.</small>
+ </section>
+</div>
+<div id="loading"><h1>🐱 Cozy Cat Town</h1><p>Preparando sua vila…</p><div class="lbar"><i id="loadbar"></i></div></div>
+<script type="module" src="js/main.js?v=9"></script>
 </body></html>

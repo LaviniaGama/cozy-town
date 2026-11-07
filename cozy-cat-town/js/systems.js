@@ -1,5 +1,5 @@
 import {S,emit,nid} from './state.js';
-import {CROPS,RECIPES,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,STORY,PASS_TASKS} from './data.js';
+import {CROPS,RECIPES,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,STORY,PASS_TASKS,activeMissions} from './data.js';
 export const now=()=>Date.now();
 export const toast=(m,k='ok')=>emit('toast',{m,k});
 export const xpNeed=l=>40+l*35;
@@ -15,11 +15,11 @@ export function speed(b){const c=b.cat&&S.cats[b.cat];let s=1+.2*(b.lv-1);if(c){
 export const growProg=(p,t=now())=>Math.min(1,(t-p.at)/(p.end-p.at));
 export function plant(bid,i,k,quiet){const b=getB(bid),c=CROPS[k];if(!b||b.type!=='farm'||b.plots[i]||!c)return false;
  if(S.lv<c.lv){quiet||toast('Nível '+c.lv+' necessário','bad');return false}
- if(S.coins<c.seed){quiet||toast('Moedas insuficientes','bad');return false}
- S.coins-=c.seed;const t=now();b.plots[i]={c:k,at:t,end:t+c.t*1000/speed(b)};if(k==='wheat')S.stats.wheatPlanted++;checkStory();emit('hud');return true}
+ if((S.seeds[k]||0)<1){quiet||toast('Sem sementes. Visite a loja para comprar mais.','bad');return false}
+ S.seeds[k]--;const t=now();b.plots[i]={c:k,at:t,end:t+c.t*1000/speed(b)};if(k==='wheat')S.stats.wheatPlanted++;checkStory();emit('hud');emit('inv');return true}
 export function harvest(bid,i){const b=getB(bid),p=b&&b.plots[i];if(!p||now()<p.end)return false;
  const n=2+(b.lv>=3?1:0)+(b.lv>=5?1:0);addItem(p.c,n);addXp(CROPS[p.c].xp);S.stats.harvest++;if(p.c==='wheat')S.stats.wheatHarvest++;b.plots[i]=null;emit('harvested',{b,i,k:p.c,n});checkStory();return true}
-export function plantAll(bid,k){let n=0;const b=getB(bid);if(!b)return 0;for(let i=0;i<6;i++)if(plant(bid,i,k,true))n++;if(!n)toast('Nada plantado (moedas/nível?)','bad');return n}
+export function plantAll(bid,k){let n=0;const b=getB(bid);if(!b)return 0;for(let i=0;i<6;i++)if(plant(bid,i,k,true))n++;if(!n)toast('Nada plantado. Verifique sementes, nível e canteiros vazios.','bad');return n}
 export function harvestAll(bid){let n=0;for(let i=0;i<6;i++)if(harvest(bid,i))n++;return n}
 // production
 export const cap=b=>3+Math.floor(b.lv/2);
@@ -38,6 +38,9 @@ export function upgrade(bid){const b=getB(bid);if(!b||b.lv>=5)return false;const
 // economy
 const price=k=>(CROPS[k]||RECIPES[k]||{sell:0}).sell;
 export function sell(k,all){const n=all?(S.inv[k]||0):Math.min(1,S.inv[k]||0);if(!n)return;S.inv[k]-=n;addCoins(n*price(k));emit('inv')}
+export function buySeeds(k,pack=5){const c=CROPS[k];if(!c||S.lv<c.lv){toast(c?'Nível '+c.lv+' necessário':'Semente indisponível','bad');return false}
+ const cost=c.seed*pack;if(S.coins<cost){toast('Moedas insuficientes para comprar as sementes.','bad');return false}
+ S.coins-=cost;S.seeds[k]=(S.seeds[k]||0)+pack;S.stats.seedBought+=pack;emit('hud');emit('inv');toast(`+${pack} sementes de ${c.n.toLowerCase()}! 🌱`);return true}
 // cats
 export function unlockCat(id){const c=CATS[id];if(!c||S.cats[id])return false;
  if(c.lv>=6&&!S.buildings.some(b=>b.type==='observatory')){toast('Construa o observatório para atrair gatos raros.','bad');return false}
@@ -54,21 +57,44 @@ export function pet(id){const t=now();if(petCd[id]>t)return 0;petCd[id]=t+2500;S
 export function buyBuilding(type,x,z,r){const d=BUILD[type];if(S.lv<d.lv||S.coins<d.price){toast(S.lv<d.lv?'Nível '+d.lv+' necessário':'Moedas insuficientes','bad');return null}
  S.coins-=d.price;const b={id:nid(),type,x,z,r,lv:1,cat:null};if(type==='farm')b.plots=Array(6).fill(null);
  if(['kitchen','bakery','dairy','packing','toolshop'].includes(type)){b.cur=null;b.q=[]}S.buildings.push(b);S.stats.build++;emit('sync');emit('hud');toast(d.n+' construído! 🏠');return b}
-export function buyDecor(t){const d=DECOR[t];if(S.coins<d.price){toast('Moedas insuficientes','bad');return false}S.coins-=d.price;S.decoInv[t]=(S.decoInv[t]||0)+1;emit('hud');emit('inv');return true}
-export function placeDecor(t,x,z,r){if(!(S.decoInv[t]>0))return null;S.decoInv[t]--;const d={id:nid(),type:t,x,z,r};S.decor.push(d);S.stats.place++;emit('sync');emit('inv');return d}
-export function storeDecor(id){const i=S.decor.findIndex(d=>d.id===id);if(i<0)return;const d=S.decor.splice(i,1)[0];S.decoInv[d.type]=(S.decoInv[d.type]||0)+1;emit('sync');emit('inv')}
+export function buyDecor(t,decorColor){const d=DECOR[t];if(!d)return false;if(S.coins<d.price){toast('Moedas insuficientes','bad');return false}S.coins-=d.price;S.decoInv[t]=(S.decoInv[t]||0)+1;(S.decoInvColors[t]||(S.decoInvColors[t]=[])).push(decorColor??null);emit('hud');emit('inv');return true}
+export const peekDecorColor=t=>S.decoInvColors[t]?.[S.decoInvColors[t].length-1];
+export function placeDecor(t,x,z,r,decorColor){if(!(S.decoInv[t]>0))return null;S.decoInv[t]--;const savedColor=S.decoInvColors[t]?.pop(),color=decorColor??savedColor,d={id:nid(),type:t,x,z,r};
+ if(color!=null){d.decorColor=color;if(DECOR[t].form==='flower')d.flowerColor=color}
+ if(DECOR[t].form==='fruitTree')d.fruitAt=now()+DECOR[t].grow;
+ S.decor.push(d);S.stats.place++;emit('sync');emit('inv');return d}
+export function harvestTree(id){const d=S.decor.find(x=>x.id===id),spec=d&&DECOR[d.type];if(!d||spec?.form!=='fruitTree')return false;
+ const t=now();if(!d.fruitAt)d.fruitAt=t+spec.grow;
+ if(t<d.fruitAt){toast(`${spec.n}: frutos em ${Math.ceil((d.fruitAt-t)/1000)}s.`);return false}
+ const n=spec.yield;addItem(spec.fruit,n);addXp(CROPS[spec.fruit].xp*n);S.stats.treeHarvest++;d.fruitAt=t+spec.grow;emit('treeHarvest',{id,n,fruit:spec.fruit});toast(`Colheu ${n} ${CROPS[spec.fruit].n.toLowerCase()}! 🍃`);return true}
+export const treeReady=id=>{const d=S.decor.find(x=>x.id===id),spec=d&&DECOR[d.type];return !!spec&&spec.form==='fruitTree'&&Date.now()>=(d.fruitAt||0)}
+export function replaceFloor(id,type,r){const old=S.decor.find(d=>d.id===id);if(!old||!(S.decoInv[type]>0))return false;
+ S.decoInv[type]--;S.decoInvColors[type]?.pop();S.decoInv[old.type]=(S.decoInv[old.type]||0)+1;(S.decoInvColors[old.type]||(S.decoInvColors[old.type]=[])).push(old.decorColor??old.flowerColor??null);old.type=type;old.r=r;delete old.decorColor;delete old.flowerColor;emit('sync');emit('inv');toast('Piso renovado! ✨');return true}
+export function storeDecor(id){const i=S.decor.findIndex(d=>d.id===id);if(i<0)return false;const d=S.decor.splice(i,1)[0];S.decoInv[d.type]=(S.decoInv[d.type]||0)+1;(S.decoInvColors[d.type]||(S.decoInvColors[d.type]=[])).push(d.decorColor??d.flowerColor??null);emit('sync');emit('inv');toast('Decoração guardada no inventário 📦');return true}
+export function sellDecor(id){const i=S.decor.findIndex(d=>d.id===id);if(i<0)return false;const d=S.decor[i],price=Math.floor((DECOR[d.type]?.price||0)*.5);
+ S.decor.splice(i,1);addCoins(price);emit('sync');emit('inv');toast(`Decoração vendida por ${price} 🪙`);return true}
+export function storeBuilding(id){const i=S.buildings.findIndex(b=>b.id===id);if(i<0)return false;
+ const stored=JSON.parse(JSON.stringify(S.buildings[i]));stored.cat=null;if(stored.type==='restaurant')closeRestaurantCustomers();S.storedBuildings.push(stored);S.buildings.splice(i,1);emit('sync');emit('inv');toast('Construção guardada no inventário 📦');return true}
+export function placeStored(id,x,z,r){const i=S.storedBuildings.findIndex(b=>b.id===id);if(i<0)return false;
+ const [b]=S.storedBuildings.splice(i,1);b.x=x;b.z=z;b.r=r;S.buildings.push(b);emit('sync');emit('inv');toast(`${BUILD[b.type].n} colocado novamente!`);return true}
+export function sellBuilding(id){const i=S.buildings.findIndex(b=>b.id===id);if(i<0)return false;const b=S.buildings[i];
+ if(['farm','kitchen'].includes(b.type)&&S.buildings.filter(x=>x.type===b.type).length===1){toast(`Mantenha ao menos uma ${BUILD[b.type].n.toLowerCase()} na vila. Você pode guardá-la e colocá-la de volta depois.`,'bad');return false}
+ const value=Math.floor((BUILD[b.type]?.price||0)*.5);
+ if(b.type==='restaurant')closeRestaurantCustomers();S.buildings.splice(i,1);addCoins(value);emit('sync');emit('hud');toast(`${BUILD[b.type].n} vendido por ${value} 🪙`);return true}
 // customers
 export const CUST=[];let nextSpawn=now()+4000,cid=1;
 export const restaurant=()=>S.buildings.find(b=>b.type==='restaurant');
-const TINTS=[null,0xffd1dc,0xb5e3ff,0xfff0a8,0xc9f2c7];
+function closeRestaurantCustomers(){for(const c of CUST.slice())rmCust(c,false)}
+const VISITOR_MODELS=['strawberryCat','banana','persian'];
 export function tickCust(t=now()){const r=restaurant();if(!r)return;const max=Math.min(4,2+r.lv);
  for(const c of CUST.slice())if(t>c.born+c.pat)rmCust(c,false);
- if(CUST.length<max&&t>=nextSpawn){nextSpawn=t+(14000+Math.random()*9000)/(r.cat?1.25:1);
+ if(CUST.length<Math.min(max,VISITOR_MODELS.length)&&t>=nextSpawn){nextSpawn=t+(14000+Math.random()*9000)/(r.cat?1.25:1);
   const opts=Object.keys(RECIPES).filter(k=>RECIPES[k].lv<=S.lv),want=opts[Math.random()*opts.length|0];
   const used=CUST.map(c=>c.slot);let slot=0;while(used.includes(slot))slot++;
-  const available=['frog','duck','banana','persian'].filter(k=>!CUST.some(active=>active.kind===k));
-  const kind=available.length?available[Math.random()*available.length|0]:['frog','duck','banana','persian'][Math.random()*4|0];
-  const c={id:'c'+cid++,kind,tint:kind==='frog'||kind==='duck'?null:TINTS[Math.random()*TINTS.length|0],want,slot,born:t,pat:150000};CUST.push(c);emit('custAdd',c)}}
+  const available=VISITOR_MODELS.filter(model=>!CUST.some(active=>(active.model||active.kind)===model));
+  if(!available.length)return;
+  const model=available[Math.random()*available.length|0];
+  const c={id:'c'+cid++,kind:model,model,tint:null,want,slot,born:t,pat:150000};CUST.push(c);emit('custAdd',c)}}
 function rmCust(c,ok,reward){const i=CUST.indexOf(c);if(i>=0)CUST.splice(i,1);emit('custDel',{c,ok,reward})}
 export function serve(id){const c=CUST.find(x=>x.id===id),r=restaurant();if(!c||!r)return false;
  if(!(S.inv[c.want]>0)){toast('Faltando '+nameOf(c.want)+' no inventário','bad');return false}
@@ -94,8 +120,8 @@ export const passProg=t=>S.stats[t.stat]||0;
 export function claimPass(id){if(S.lv<13)return false;const t=PASS_TASKS.find(x=>x.id===id);if(!t||S.passClaimed[id]||passProg(t)<t.n)return false;S.passClaimed[id]=1;addCoins(t.coins);addXp(t.xp);emit('pass');toast(`Passe fofinho: +${t.coins} moedas e +${t.xp} XP!`);return true}
 // missions
 export const prog=m=>m.k==='lv'?S.lv:m.k==='cats'?Object.keys(S.cats).length:(S.stats[m.k]||0);
-export function claim(id){const m=[...MISSIONS,...ACH].find(x=>x.id===id);if(!m||S.claimed[id]||prog(m)<m.n)return false;
+export function claim(id){const m=[...activeMissions(S.lv),...ACH].find(x=>x.id===id);if(!m||S.claimed[id]||prog(m)<m.n)return false;
  S.claimed[id]=1;addCoins(m.r);addXp(10);toast('Recompensa: +'+m.r+' 🪙');emit('claim');return true}
-export const claimable=()=>[...MISSIONS,...ACH].filter(m=>!S.claimed[m.id]&&prog(m)>=m.n).length;
+export const claimable=()=>[...activeMissions(S.lv),...ACH].filter(m=>!S.claimed[m.id]&&prog(m)>=m.n).length;
 // bonus cat
 export function money(){const v=100+S.lv*40;addCoins(v);toast('Gatinho do dinheiro! +'+v+' 🪙');return v}
