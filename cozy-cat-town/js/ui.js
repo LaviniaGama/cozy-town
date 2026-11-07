@@ -1,8 +1,8 @@
 import {S,save,reset,emit,bus,hasSave} from './state.js';
 import {CROPS,RECIPES,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,PASS_TASKS,FRUIT_TREES,FLOWER_COLORS,activeMissions} from './data.js';
 import {W} from './world.js';
-import * as G from './systems.js';
-import * as P from './place.js';
+import * as G from './systems.js?v=3';
+import * as P from './place.js?v=12';
 const $=id=>document.getElementById(id);
 export const ui={panel:null,seed:'wheat',recipeQuery:'',cookAmounts:{},decorCategory:'all',decorSearch:'',flowerType:'',decorColorType:''};
 const bar=p=>`<div class="pb"><i style="width:${Math.round(Math.max(0,Math.min(1,p))*100)}%"></i></div>`;
@@ -93,8 +93,11 @@ const setH=()=>`<h4>Preferências da vila</h4>
  <button class="big" data-a="toggleShadows">${W.renderer&&W.renderer.shadowMap.enabled?'🌤 Desativar sombras':'🌥 Ativar sombras'}</button>
  <button class="big" data-a="cameraHome">🎥 Centralizar câmera</button>
  <div class="row"><button data-a="zoomIn">＋ Aproximar</button><button data-a="zoomOut">－ Afastar</button></div>
- <button class="big" data-a="saveNow">💾 Salvar agora</button><button class="big" data-a="reset">🗑 Recomeçar do zero</button>
- <div class="sub">Salvamento automático a cada poucos segundos.<br>Arraste para girar · Botão direito para mover · Scroll para zoom.<br>W A S D: mover câmera · ← →: girar · ↑ ↓: zoom · R: girar item · Esc: cancelar.</div>`;
+ <button class="big" data-a="saveNow">💾 Salvar agora</button>
+ <button class="big" data-a="returnToMenu">🏠 Voltar para o menu principal</button>
+ <button class="big" data-a="exitGame">🚪 Sair do jogo</button>
+ <button class="big" data-a="reset">🗑 Recomeçar do zero</button>
+ <div class="sub">Salvamento automático a cada poucos segundos.<br>Arraste para girar a câmera · Botão direito para mover a câmera · Scroll para zoom.<br>W A S D: mover câmera · ← →: girar · ↑ ↓: zoom · R: girar item · Esc: cancelar.<br>Em Mover, arraste com o botão esquerdo para selecionar vários itens.</div>`;
 const TITLES={inv:'🧺 Inventário',cats:'🐱 Gatos',build:'🏗️ Construir',decor:'🌸 Decoração',miss:'📜 Missões',set:'⚙️ Opções'};
 Object.assign(TITLES,{journey:'Jornada',delivery:'Entregas'});
 const journeyH=()=>{const s=G.storyStep(),p=s.stat?Math.min(1,(S.stats[s.stat]||0)/s.n):S.story?1:0;let h=`<div class="card2"><h4>${s.t}</h4><p>${s.d}</p><b>${s.goal}</b>${s.stat?bar(p):''}`;
@@ -113,13 +116,15 @@ export function render(){const p=ui.panel;if(!p)return;let t='',h='';
 // handlers
 const H={
  continueGame:()=>emit('startGame'),
- newGame:()=>{if(hasSave()&&!confirm('Começar uma nova vila? O progresso atual será substituído.'))return;reset();emit('sync');close();emit('startGame')},
+ newGame:()=>{if(hasSave()&&!confirm('Começar uma nova vila? O progresso atual será substituído.'))return;P.cancel();if(P.P.moveEnabled)P.toggleMove();else P.clearSelection();reset();emit('sync');close();W.ctl.target.set(0,0,1);W.cam.position.set(30,23,30);W.ctl.update();emit('startGame')},
+ returnToMenu:()=>{save();P.cancel();if(P.P.moveEnabled)P.toggleMove();else P.clearSelection();close();emit('pauseForTitle');$('exit-screen').hidden=true;$('start-screen').hidden=false;$('continue').disabled=!hasSave()},
+ exitGame:()=>{save();P.cancel();if(P.P.moveEnabled)P.toggleMove();else P.clearSelection();close();emit('pauseForTitle');$('start-screen').hidden=true;$('exit-screen').hidden=false;window.close()},
  titleSettings:()=>open('set'),
  startStory:()=>{G.startStory();render()},deliver:()=>{G.deliverOrder();render()},daily:()=>{G.claimDaily();render()},passClaim:d=>{G.claimPass(d.id);render()},
  open:d=>open(d.id),close,seed:d=>{ui.seed=d.k;render()},
  buySeeds:d=>{G.buySeeds(d.k);render()},
  storeB:d=>{G.storeBuilding(d.id);close()},sellB:d=>{if(confirm('Vender esta construção por metade do valor original?')){G.sellBuilding(d.id);close()}},
- moveMode:()=>P.toggleMove(),decorCategory:d=>{ui.decorCategory=d.k;render()},chooseDecorColor:d=>{if(DECOR[d.k]){ui.decorColorType=d.k;render()}},decorColor:d=>{const n=Number(d.color),type=ui.decorColorType;if(DECOR[type]&&FLOWER_COLORS.some(c=>c.color===n)){S.options.decorColors[type]=n;if(DECOR[type].form==='flower')S.options.flowerColor=n;render()}},flowerColor:d=>{const n=Number(d.color);if(FLOWER_COLORS.some(c=>c.color===n)){S.options.flowerColor=n;render()}},sellSelected:()=>{if(P.P.sel&&confirm('Vender esta decoração por metade do valor original?'))P.sell()},
+ moveMode:()=>P.toggleMove(),selectionAction:d=>P.setSelectionAction(d.k),selectionApply:()=>P.applySelectionAction(),selectionClear:()=>P.clearSelection(),selectionCancelConfirm:()=>P.cancelSelectionConfirm(),selectionDone:()=>P.toggleMove(),decorCategory:d=>{ui.decorCategory=d.k;render()},chooseDecorColor:d=>{if(DECOR[d.k]){ui.decorColorType=d.k;render()}},decorColor:d=>{const n=Number(d.color),type=ui.decorColorType;if(DECOR[type]&&FLOWER_COLORS.some(c=>c.color===n)){S.options.decorColors[type]=n;if(DECOR[type].form==='flower')S.options.flowerColor=n;render()}},flowerColor:d=>{const n=Number(d.color);if(FLOWER_COLORS.some(c=>c.color===n)){S.options.flowerColor=n;render()}},sellSelected:()=>{if(P.P.sel&&confirm('Vender esta decoração por metade do valor original?'))P.sell()},
  harvestTree:d=>{G.harvestTree(d.id);render()},placeStored:d=>{close();P.startStored(d.id)},
  plant:d=>{G.plant(d.id,+d.i,ui.seed);render()},harvest:d=>{G.harvest(d.id,+d.i);render()},plantAll:d=>{G.plantAll(d.id,ui.seed);render()},harvestAll:d=>{G.harvestAll(d.id);render()},
  cook:d=>{G.cook(d.id,d.k,ui.cookAmounts[`${d.id}:${d.k}`]||1);render()},upgrade:d=>{G.upgrade(d.id);render()},sell:d=>{G.sell(d.k);render()},sellAll:d=>{G.sell(d.k,true);render()},
@@ -131,7 +136,7 @@ const H={
  toggleLabels:()=>{S.options.showLabels=W.labelsVisible===false;W.labelsVisible=S.options.showLabels;render()},
  toggleMotion:()=>{S.options.reducedMotion=!W.reducedMotion;W.reducedMotion=S.options.reducedMotion;render()},
  toggleShadows:()=>{S.options.shadows=!W.renderer.shadowMap.enabled;W.renderer.shadowMap.enabled=S.options.shadows;render()},
- cameraHome:()=>{W.ctl.target.set(0,0,1);W.cam.position.set(42,28,43);W.ctl.update()},
+ cameraHome:()=>{W.ctl.target.set(0,0,1);W.cam.position.set(30,23,30);W.ctl.update()},
  zoomIn:()=>W.ctl.dollyIn(1.2),zoomOut:()=>W.ctl.dollyOut(1.2),
  saveNow:()=>{save();G.toast('Jogo salvo 💾')},reset:()=>{if(confirm('Apagar todo o progresso?')){reset();emit('sync');emit('pauseForTitle');close();$('continue').disabled=!hasSave();document.getElementById('start-screen').hidden=false}}};
 export function init(){
@@ -142,7 +147,7 @@ export function init(){
  document.addEventListener('input',e=>{if(e.target.matches('[data-role="recipe-filter"]')){const q=e.target.value.trim().toLowerCase();ui.recipeQuery=e.target.value;document.querySelectorAll('.recipe-row').forEach(row=>{row.hidden=!row.dataset.recipeName.includes(q)})}});
  document.addEventListener('input',e=>{if(e.target.matches('[data-role="decor-filter"]')){const q=e.target.value.trim().toLowerCase();ui.decorSearch=e.target.value;document.querySelectorAll('.decor-entry').forEach(row=>{row.hidden=!row.dataset.decorName.includes(q)})}});
  $('panel').addEventListener('click',e=>{if(e.target===$('panel'))close()});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(ui.panel)close();else if(P.P.mode)P.cancel();else if(P.P.sel)P.P.sel=null}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(ui.panel)close();else if(P.P.mode)P.cancel();else if(P.P.moveEnabled)P.toggleMove();else if(P.P.sel)P.P.sel=null}});
  document.addEventListener('change',e=>{const el=e.target;if(el.tagName==='SELECT'&&el.dataset.a==='assign'){G.assign(el.dataset.id,el.value);render()}});
  document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-role="cook-quantity"]')){const value=Number(el.value);if(Number.isSafeInteger(value)&&value>0)ui.cookAmounts[`${el.dataset.id}:${el.dataset.k}`]=value}});
  bus.addEventListener('toast',e=>{const d=document.createElement('div');d.className='toast '+(e.detail.k||'');d.textContent=e.detail.m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),2600)});
@@ -155,8 +160,8 @@ export function hud(){const need=G.xpNeed(S.lv),h=S.clock*24,hh=Math.floor(h),mm
  const c=G.claimable();$('badge').textContent=c||'';$('badge').hidden=!c;
  const bar$=$('bar'),m=P.P.mode,s=P.P.sel;
  const setBar=html=>{bar$.hidden=!html;bar$.style.display=html?'':'none';if(bar$._h!==html){bar$.innerHTML=html;bar$._h=html}};
- if(m){const n=['b','moveB','storedB'].includes(m.kind)?BUILD[m.type]:DECOR[m.type];setBar(`<b>${n.e} ${n.n}</b> ${m.kind==='b'?'🪙'+n.price:''}<button data-a="b_ok">${m.kind==='moveB'||m.kind==='moveD'?'✅ Confirmar movimento':'✅ Colocar'}</button><button data-a="b_rot">↻ Girar</button><button data-a="b_cancel">✖ Cancelar</button>`)}
- else if(P.P.moveEnabled)setBar('<b>↔ Mover itens</b> Clique num item da vila para movê-lo. <button data-a="moveMode">Concluir</button>');
+ if(m){const n=['b','moveB','storedB'].includes(m.kind)?BUILD[m.type]:DECOR[m.type],multi=m.kind==='d'&&['floor','flower','tree','pine'].includes(n.form),group=m.kind==='moveGroup';setBar(`<b>${group?`${m.items.length} itens`:n.e+' '+n.n}</b> ${m.kind==='b'?'🪙'+n.price:''}${multi?`<small>🖱️ Botão esquerdo + arraste para preencher linhas/áreas · ${m.batchPositions?.length||0} itens</small>`:''}${group?`<small>Mova o grupo em tempo real${m.ok?' · posição válida':' · espaço ocupado'}</small>`:''}<button data-a="b_ok">${m.kind==='moveB'||m.kind==='moveD'||group?'✅ Confirmar movimento':'✅ Colocar'}</button><button data-a="b_rot">↻ Girar</button><button data-a="b_cancel">✖ Cancelar</button>`)}
+ else if(P.P.moveEnabled){const count=P.P.selected.length,action=P.P.selectionAction,confirming=P.P.confirmAction===action,label=action==='move'?'Mover selecionados':action==='store'?'Guardar selecionados':'Vender selecionados';setBar(`<b>Seleção de itens · ${count} selecionado${count===1?'':'s'}</b><small>${confirming?'Clique novamente para confirmar a ação.':'Arraste com o botão esquerdo sobre a vila; escolha mover, guardar ou vender.'}</small><button class="${action==='move'?'on':''}" data-a="selectionAction" data-k="move">↔ Mover</button><button class="${action==='store'?'on':''}" data-a="selectionAction" data-k="store">📦 Guardar</button><button class="${action==='sell'?'on':''}" data-a="selectionAction" data-k="sell">🪙 Vender</button><button data-a="selectionApply" ${count?'':'disabled'}>${confirming?'Confirmar ':''}${label}</button>${confirming?'<button data-a="selectionCancelConfirm">Cancelar</button>':''}${count?'<button data-a="selectionClear">Limpar seleção</button>':''}<button data-a="selectionDone">Concluir</button>`)}
  else if(s){const d=s.kind==='decor'&&S.decor.find(x=>x.id===s.id);if(d){const ready=G.treeReady(d.id);setBar(`<b>${DECOR[d.type].e} ${DECOR[d.type].n}</b><button data-a="b_rot">↻ Girar</button><button data-a="b_store">📦 Guardar</button><button data-a="sellSelected">🪙 Vender</button>${DECOR[d.type].form==='fruitTree'?`<button data-a="harvestTree" data-id="${d.id}" ${ready?'':'disabled'}>🍎 Colher</button>`:''}<button data-a="b_done">✔ Fechar</button>`)}else setBar('')}
  else setBar('');
  const moveButton=$('move-mode');if(moveButton){moveButton.classList.toggle('on',P.P.moveEnabled);moveButton.setAttribute('aria-pressed',String(P.P.moveEnabled))}

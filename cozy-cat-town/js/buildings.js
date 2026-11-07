@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {mk,sprite,glow,W,GRAD} from './world.js';
 import {S} from './state.js';
 import {BUILD,CROPS,DECOR} from './data.js';
-import {growProg} from './systems.js';
+import {growProg} from './systems.js?v=3';
 const {Group,CylinderGeometry:Cy,SphereGeometry:Sp,ConeGeometry:Co,BoxGeometry:Bx,TorusGeometry:To}=THREE;
 const C={cream:0xfff3d6,pink:0xffb3c7,blue:0xa8d8ff,yel:0xffe28a,green:0xb8e6a1,soil:0x9c6b4a,white:0xffffff,red:0xff8a8a,lav:0xd9c2ff,mint:0xbdf0d4,brown:0xb98a68};
 const PI=Math.PI;
@@ -141,23 +141,8 @@ function extraDecor(type,d){const g=new Group(),c=d.color,a=d.accent;
   }
  }else if(d.form==='floor'){
   add(new Bx(.98,.08,.98),c,0,.045,0);
-  const rail=.065;
-  for(const z of[-.42,.42])add(new Bx(.88,.025,rail),a,0,.1,z);
-  for(const x of[-.42,.42])add(new Bx(rail,.025,.78),a,x,.1,0);
-  if(d.shape==='wood'){for(const z of[-.3,-.1,.1,.3])add(new Bx(.82,.018,.018),a,0,.105,z)}
-  else if(d.shape==='brick'){for(const z of[-.25,.25])add(new Bx(.88,.02,.025),a,0,.105,z);for(const x of[-.23,.23])add(new Bx(.025,.02,.42),a,x,.105,0)}
-  else if(d.shape==='tile'||d.shape==='mosaic'){for(const[x,z]of[[-.23,-.23],[.23,-.23],[-.23,.23],[.23,.23]])add(new Bx(.36,.025,.36),a,x,.11,z)}
-  else if(d.shape==='cobble'){for(const[x,z,s]of[[-.24,-.22,.19],[.18,-.25,.22],[-.19,.2,.22],[.23,.2,.18]])add(new Sp(s,7,5),a,x,.11,z,[1,.16,1])}
-  else if(d.shape==='flower'||d.shape==='fruit'){for(const[x,z]of[[-.23,-.18],[.2,-.2],[-.12,.2],[.24,.18]]){add(new Sp(.075,8,6),a,x,.12,z,[1,.38,1]);if(d.shape==='fruit')add(new Sp(.055,7,5),c,x+.06,.13,z+.04)}}
-  else if(d.shape==='leaf'){for(const[x,z,r]of[[-.22,-.18,-.6],[.2,-.16,.5],[-.19,.2,.45],[.22,.2,-.5]])add(new Sp(.11,7,5),a,x,.12,z,[1,.35,.65],[0,r,r])}
-  else if(d.shape==='shell'){for(const[x,z]of[[-.2,-.15],[.2,.16]])add(new To(.09,.025,5,10,PI),a,x,.12,z)}
-  else if(d.shape==='cloud'){for(const[x,z,r]of[[-.2,0,.11],[0,-.17,.13],[.2,0,.11]])add(new Sp(r,7,5),a,x,.12,z,[1,.25,1])}
-  else if(d.shape==='moon'){add(new To(.18,.035,7,12,PI),a,0,.13,0)}
-  else if(d.shape==='wave'){for(const z of[-.3,0,.3])add(new To(.3,.018,6,14,Math.PI),a,0,.12,z,[1,.5,.5])}
-  else if(d.shape==='honey'){for(const[x,z]of[[-.21,-.19],[.21,-.19],[-.21,.19],[.21,.19]])add(new Cy(.12,.12,.025,6),a,x,.12,z,[1,1,1],[0,0,Math.PI/6])}
-  else if(d.shape==='marble'){add(new To(.3,.018,5,14),a,0,.12,0)}
-  else if(d.shape==='snow'){for(const[x,z]of[[-.22,-.2],[.2,.18],[.18,-.21]])add(new Sp(.07,6,4),a,x,.12,z)}
-  else add(new To(.16,.035,5,12),a,0,.13,0);
+  for(const z of[-.42,.42])add(new Bx(.88,.006,.065),a,0,.087,z);
+  for(const x of[-.42,.42])add(new Bx(.065,.006,.78),a,x,.087,0);
  }else if(d.form==='fruitTree'){
   add(new Cy(.18,.24,1.28,8),0x9b6b4c,0,.64,0);
   if(type==='fruit_tree_12'){

@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Cozy Cat Town 🐱</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=16">
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 </head><body>
 <canvas id="c"></canvas><div id="labels"></div>
@@ -28,6 +28,14 @@
   <small class="save-hint">Seu progresso é salvo automaticamente neste dispositivo.</small>
  </section>
 </div>
+<div id="exit-screen" hidden>
+ <section class="start-card">
+  <div class="start-art" aria-hidden="true"><span>🐱</span><span>💾</span><span>🌷</span></div>
+  <p class="eyebrow">PROGRESSO SALVO</p><h1>Até logo!</h1>
+  <p class="start-copy">Seu jogo foi salvo neste dispositivo. Se a aba continuar aberta, você pode voltar ao menu ou fechá-la.</p>
+  <button class="start-button continue" data-a="returnToMenu">🏠 Voltar para o menu principal</button>
+ </section>
+</div>
 <div id="loading"><h1>🐱 Cozy Cat Town</h1><p>Preparando sua vila…</p><div class="lbar"><i id="loadbar"></i></div></div>
-<script type="module" src="js/main.js?v=9"></script>
+<script type="module" src="js/main.js?v=22"></script>
 </body></html>

@@ -66,6 +66,28 @@ export function placeDecor(t,x,z,r,decorColor){if(!(S.decoInv[t]>0))return null;
  if(color!=null){d.decorColor=color;if(DECOR[t].form==='flower')d.flowerColor=color}
  if(DECOR[t].form==='fruitTree')d.fruitAt=now()+DECOR[t].grow;
  S.decor.push(d);S.stats.place++;emit('sync');emit('inv');return d}
+export function placeDecorBatch(t,placements,r=0,decorColor){
+ const spec=DECOR[t];if(!spec||!Array.isArray(placements))return 0;
+ const count=Math.min(placements.length,S.decoInv[t]||0);
+ if(!count)return 0;
+ for(const p of placements.slice(0,count)){
+  const savedColor=S.decoInvColors[t]?.pop(),color=decorColor??savedColor;
+  S.decoInv[t]--;
+  const old=spec.form==='floor'?S.decor.find(d=>DECOR[d.type]?.form==='floor'&&d.x===p.x&&d.z===p.z):null;
+  if(old){
+   S.decoInv[old.type]=(S.decoInv[old.type]||0)+1;
+   (S.decoInvColors[old.type]||(S.decoInvColors[old.type]=[])).push(old.decorColor??old.flowerColor??null);
+   old.type=t;old.r=r;delete old.decorColor;delete old.flowerColor;
+   if(color!=null){old.decorColor=color;if(spec.form==='flower')old.flowerColor=color}
+  }else{
+   const d={id:nid(),type:t,x:p.x,z:p.z,r};
+   if(color!=null){d.decorColor=color;if(spec.form==='flower')d.flowerColor=color}
+   S.decor.push(d);S.stats.place++;
+  }
+ }
+ emit('sync');emit('hud');emit('inv');
+ return count;
+}
 export function harvestTree(id){const d=S.decor.find(x=>x.id===id),spec=d&&DECOR[d.type];if(!d||spec?.form!=='fruitTree')return false;
  const t=now();if(!d.fruitAt)d.fruitAt=t+spec.grow;
  if(t<d.fruitAt){toast(`${spec.n}: frutos em ${Math.ceil((d.fruitAt-t)/1000)}s.`);return false}

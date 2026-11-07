@@ -3,11 +3,11 @@ import {W,init as initWorld,setDay,tickWorld,render,label,sweep,burst,clearFlowe
 import * as A from './assets.js';
 import {S,load,save,bus,emit} from './state.js';
 import {DAY_SEC,CATS,RECIPES,DECOR} from './data.js';
-import * as G from './systems.js';
+import * as G from './systems.js?v=3';
 import {makeBuilding,makeDecor,rectOf} from './buildings.js';
 import {CatEnt,CustEnt,MoneyCat} from './cats.js';
-import * as P from './place.js';
-import * as UI from './ui.js?v=9';
+import * as P from './place.js?v=12';
+import * as UI from './ui.js?v=21';
 const bv=new Map(),dv=new Map(),cats=new Map(),custs=new Map();let money=null,pelican=null,nextMoney=Date.now()+45000,gameStarted=false;
 function makePelican(){const g=new THREE.Group(),mat=c=>new THREE.MeshToonMaterial({color:c});g.userData.ref={t:'pelican'};
  const body=new THREE.Mesh(new THREE.SphereGeometry(.62,12,9),mat(0xfff8e8));body.scale.set(1,1.15,1.25);body.position.y=.88;g.add(body);
@@ -22,11 +22,15 @@ function ensurePelican(){if(S.lv>=3&&!pelican){pelican=makePelican();W.scene.add
 function sync(){
  const ids=new Set(S.buildings.map(b=>b.id));
  for(const[id,v]of bv)if(!ids.has(id)){W.scene.remove(v.g);bv.delete(id)}
- for(const b of S.buildings)if(!bv.has(b.id)){const v=makeBuilding(b);W.scene.add(v.g);bv.set(b.id,v);clearFlowers(rectOf(b))}
+ for(const b of S.buildings){
+  const existing=bv.get(b.id);
+  if(existing&&existing.b!==b){W.scene.remove(existing.g);bv.delete(b.id)}
+  if(!bv.has(b.id)){const v=makeBuilding(b);W.scene.add(v.g);bv.set(b.id,v);clearFlowers(rectOf(b))}
+ }
  for(const g of dv.values())W.scene.remove(g);dv.clear();
  for(const d of S.decor){const g=makeDecor(d.type,d.id,d.decorColor??d.flowerColor);g.position.set(d.x,0,d.z);g.rotation.y=d.r*Math.PI/2;W.scene.add(g);dv.set(d.id,g);
   if(DECOR[d.type]&&DECOR[d.type].form==='floor')clearFlowers({x:d.x,z:d.z,hw:(DECOR[d.type].w||1)/2,hd:(DECOR[d.type].d||1)/2})}
- const catIds=new Set(Object.keys(S.cats));for(const[id,c]of cats)if(!catIds.has(id)){W.scene.remove(c.g);cats.delete(id)}
+ const catIds=new Set(Object.keys(S.cats));for(const[id,c]of cats)if(!catIds.has(id)||c.stateRef!==S.cats[id]){W.scene.remove(c.g);cats.delete(id)}
  for(const id of Object.keys(S.cats))if(!cats.has(id)){const c=new CatEnt(id);W.scene.add(c.g);cats.set(id,c)}}
 const pickList=()=>[...[...bv.values()].map(v=>v.g),...dv.values(),...[...cats.values()].map(c=>c.g),...[...custs.values()].map(c=>c.g),...(money?[money.g]:[]),...(pelican?[pelican]:[])];
 function collectMoney(){if(!money)return;G.money();burst(money.g.position.clone().setY(1.5),'🪙',6);W.scene.remove(money.g);money=null;nextMoney=Date.now()+(60+Math.random()*60)*1000}
@@ -40,7 +44,7 @@ function click(ref){if(!ref){P.P.sel=null;return}
 function events(){
  bus.addEventListener('sync',sync);bus.addEventListener('catAdded',sync);bus.addEventListener('money',collectMoney);
  bus.addEventListener('pauseForTitle',()=>{gameStarted=false});
- bus.addEventListener('startGame',()=>{gameStarted=true;document.getElementById('start-screen').hidden=true;W.labelsVisible=S.options.showLabels;W.reducedMotion=S.options.reducedMotion;W.renderer.shadowMap.enabled=S.options.shadows;
+ bus.addEventListener('startGame',()=>{gameStarted=true;document.getElementById('start-screen').hidden=true;document.getElementById('exit-screen').hidden=true;W.labelsVisible=S.options.showLabels;W.reducedMotion=S.options.reducedMotion;W.renderer.shadowMap.enabled=S.options.shadows;
   for(const c of custs.values())W.scene.remove(c.g);custs.clear();G.CUST.length=0;
   if(money){W.scene.remove(money.g);money=null}ensurePelican();if(S.story===0)UI.open('journey');save()});
  bus.addEventListener('custAdd',e=>{const c=new CustEnt(e.detail);W.scene.add(c.g);custs.set(e.detail.id,c)});
@@ -51,7 +55,7 @@ function events(){
 const fmt=ms=>Math.max(0,Math.ceil(ms/1000))+'s';
 async function boot(){load();const ld=document.getElementById('loadbar');
  initWorld(document.getElementById('c'));await A.loadAll((n,t)=>{ld.style.width=(n/t*100)+'%'});
- sync();events();UI.init();ensurePelican();P.init(W.canvas,{list:pickList,click,decorView:id=>dv.get(id),buildingView:id=>bv.get(id)?.g});
+ sync();events();UI.init();ensurePelican();P.init(W.canvas,{list:pickList,click,decorView:id=>dv.get(id),buildingView:id=>bv.get(id)?.g,catView:id=>cats.get(id)});
  for(const b of S.buildings)G.tickB(b);
  document.getElementById('loading').remove();G.toast('Bem-vindo à Cozy Cat Town! 🐱 Clique nos prédios e nos gatinhos.');
  let last=performance.now(),acc=0,hudT=0,saveT=0,time=0;

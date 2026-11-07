@@ -4,7 +4,7 @@ import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import {GRAD,toonMat} from './world.js';
 // h = altura alvo (unidades do mundo); w = largura alvo (para o trio deitado); ry = giro para ajustar para onde o modelo "olha"
 const DEF={banana:{f:'cute_cat_in_cute_banana.glb',h:1.5,ry:0},persian:{f:'sylvanian_persian_cat_baby.glb',h:1.5,ry:0},
- strawberryCat:{f:'cute_cat_with_strawberries.glb',h:1.5,ry:0},money:{f:'cat_money_10_dollars.glb',w:1.4,ry:0}};
+ strawberryCat:{f:'cute_cat_with_strawberries.glb',h:1.25,ry:0},money:{f:'cat_money_10_dollars.glb',w:1.4,ry:0}};
 const cache={};
 export async function loadAll(cb){const L=new GLTFLoader();let n=0,tot=Object.keys(DEF).length;
  await Promise.all(Object.entries(DEF).map(([k,d])=>new Promise(res=>L.load('assets/models/'+d.f,g=>{cache[k]=g.scene;cb&&cb(++n,tot);res()},undefined,e=>{console.warn('Falha ao carregar',d.f,e);cb&&cb(++n,tot);res()}))))}

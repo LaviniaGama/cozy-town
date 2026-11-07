@@ -4,7 +4,7 @@ import * as A from './assets.js';
 import {S} from './state.js';
 import {CATS,RECIPES} from './data.js';
 import {front,blocked} from './buildings.js';
-import * as G from './systems.js';
+import * as G from './systems.js?v=3';
 class Actor{
  constructor(key,tint,ref,h){this.g=new THREE.Group();this.w=A.actor(key,{tint,h});this.g.add(this.w);
   const p=new THREE.Mesh(new THREE.SphereGeometry(.85,8,6),new THREE.MeshBasicMaterial({visible:false}));p.position.y=.75;this.g.add(p);
@@ -21,14 +21,18 @@ class Actor{
   else if(this.mode==='sleep')sy=.88+Math.sin(t*1.2)*.03;else sy=1+Math.sin(t*2.2)*.03;
   const w=this.w;w.position.y=y;w.scale.set(1/Math.sqrt(sy),sy,1/Math.sqrt(sy));w.rotation.z=rz}}
 export class CatEnt extends Actor{
- constructor(id){super(CATS[id].m,CATS[id].tint,{t:'cat',id});this.id=id;this.wait=Math.random()*3;this.tgt=null;
+ constructor(id){super(CATS[id].m,CATS[id].tint,{t:'cat',id});this.id=id;this.stateRef=S.cats[id];this.wait=Math.random();this.tgt=null;
   for(let i=0;i<40;i++){const x=(Math.random()-.5)*20,z=(Math.random()-.5)*18;if(!blocked(x,z,.8)){this.g.position.set(x,0,z);break}}}
- update(dt){const b=S.buildings.find(x=>x.cat===this.id),p=this.g.position;
+ update(dt){if(this.dragging){this.mode='idle';this.anim(dt);return}
+  const b=S.buildings.find(x=>x.cat===this.id),p=this.g.position;
   if(b){const f=front(b,1.5,(this.id.charCodeAt(0)%3-1)*.9);if(this.go(f.x,f.z,dt,2.2)){this.mode='work';this.face(Math.atan2(b.x-p.x,b.z-p.z),dt)}else this.mode='walk'}
-  else if(this.tgt){if(this.go(this.tgt.x,this.tgt.z,dt)){this.tgt=null;this.wait=2+Math.random()*5;this.mode='idle'}else this.mode='walk'}
+  else if(this.tgt){if(this.go(this.tgt.x,this.tgt.z,dt)){this.tgt=null;this.wait=.5+Math.random()*1.5;this.mode='idle'}else this.mode='walk'}
   else if(W.night>.65)this.mode='sleep';
-  else{this.mode='idle';this.wait-=dt;if(this.wait<=0){for(let i=0;i<16;i++){const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*43,x=Math.cos(a)*r,z=Math.sin(a)*r;if(!blocked(x,z,.6)){this.tgt={x,z};break}}this.wait=1;if(Math.random()<.25)this.jump=.6}}
+  else{this.mode='idle';this.wait-=dt;if(this.wait<=0){this.chooseWanderTarget();this.wait=.5;if(Math.random()<.25)this.jump=.6}}
   this.anim(dt)}
+ chooseWanderTarget(){for(let i=0;i<24;i++){const a=Math.random()*Math.PI*2,r=5+Math.random()*12,x=this.g.position.x+Math.cos(a)*r,z=this.g.position.z+Math.sin(a)*r;if(!blocked(x,z,.6)){this.tgt={x,z};return true}}return false}
+ resumeWalking(){this.wait=0;this.chooseWanderTarget()}
+ dragTo(x,z){if(blocked(x,z,.6))return false;this.g.position.set(x,0,z);this.mode='idle';return true}
  poke(){this.jump=.6;burst(this.g.position.clone().setY(1.7),'💖',3)}}
 export class CustEnt extends Actor{
  constructor(c){super(c.model||c.kind,c.tint,{t:'cust',id:c.id},1.3);this.c=c;this.st='in';this.g.position.set(12,0,6);this.exit=false}
