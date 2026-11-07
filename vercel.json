@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/cozy-cat-town/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/cozy-cat-town/:path*"
+    }
+  ]
+}
