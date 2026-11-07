@@ -3,7 +3,7 @@ import {W,groundAt,pickAt,tint} from './world.js';
 import {S,emit} from './state.js';
 import {BUILD,DECOR} from './data.js';
 import {makeBuilding,makeDecor,rectOf,decorRect} from './buildings.js';
-import * as G from './systems.js?v=3';
+import * as G from './systems.js?v=4';
 export const P={mode:null,sel:null,selected:[],selectionAction:'move',confirmAction:null,ghost:null,batchGhost:null,moveEnabled:false};
 let hooks,down=null,batchDrag=null,selectionDrag=null,selectionBox=null,catDrag=null,leftMouseAction=null;const selectionHighlights=[],snap=v=>Math.round(v*2)/2,keys=new Set(),cameraVelocity=new THREE.Vector3();
 const snapAt=(type,v)=>DECOR[type]?.form==='floor'?Math.round(v):snap(v);

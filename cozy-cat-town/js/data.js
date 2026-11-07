@@ -323,17 +323,17 @@ Object.assign(RECIPES,{
  cheese:{n:'Queijo',e:'🧀',b:'dairy',in:{milk:2},t:45,sell:44,xp:14,lv:9}
 });
 Object.assign(BUILD,{
- housing:{n:'Centro de moradias',e:'🏘️',w:5,d:4,price:0,lv:3,desc:'Gerencie as próximas moradias da vila.'},
- wardrobe:{n:'Guarda-roupa dos gatos',e:'👒',w:3,d:3,price:250,lv:4,desc:'Um cantinho para cuidar do visual dos gatinhos.'},
- resthouse:{n:'Torre de descanso',e:'🛏️',w:4,d:4,price:500,lv:5,desc:'Um lugar aconchegante para os gatos descansarem.'},
+ housing:{n:'Centro de moradias',e:'🏘️',w:5,d:4,price:0,lv:3,desc:'Receba convites para hóspedes da vila.'},
+ wardrobe:{n:'Guarda-roupa dos gatos',e:'👒',w:3,d:3,price:250,lv:4,desc:'Crie acessórios para os gatinhos.'},
+ resthouse:{n:'Torre de descanso',e:'🛏️',w:4,d:4,price:500,lv:5,desc:'Prepare vales de descanso para a vila.'},
  packing:{n:'Oficina de sacolas',e:'🛍️',w:4,d:3,price:600,lv:5,desc:'Transforme farinha em embalagens para as entregas.'},
- dairy:{n:'Fazenda de leite',e:'🥛',w:5,d:4,price:800,lv:6,desc:'Produza leite fresco e queijo.'},
- observatory:{n:'Observatório',e:'🔭',w:4,d:4,price:1000,lv:6,desc:'Observe o céu e atraia novos gatos para a vila.'},
- fishery:{n:'Área de pesca',e:'🎣',w:5,d:4,price:1200,lv:7,desc:'Um novo espaço de lazer junto à água.'},
- nightmarket:{n:'Mercado noturno',e:'🏮',w:5,d:4,price:1500,lv:7,desc:'Uma feirinha iluminada para a vila.'},
- flowergarden:{n:'Jardim de flores',e:'🌷',w:5,d:4,price:800,lv:7,desc:'Cultive um jardim colorido para os gatinhos.'},
+ dairy:{n:'Fazenda de leite',e:'🥛',w:5,d:4,price:800,lv:6,desc:'Recolha leite fresco produzido pelas vaquinhas.'},
+ observatory:{n:'Observatório',e:'🔭',w:4,d:4,price:1000,lv:6,desc:'Observe o céu e recolha fragmentos estelares.'},
+ fishery:{n:'Área de pesca',e:'🎣',w:5,d:4,price:1200,lv:7,desc:'Pague por uma pescaria de espécie aleatória.'},
+ nightmarket:{n:'Mercado noturno',e:'🏮',w:5,d:4,price:1500,lv:7,desc:'Recolha fichas especiais do mercado noturno.'},
+ flowergarden:{n:'Jardim de flores',e:'🌷',w:5,d:4,price:800,lv:7,desc:'Colha buquês campestres para vender.'},
  toolshop:{n:'Loja de ferramentas',e:'🧰',w:4,d:4,price:1700,lv:8,desc:'Produza caixas para embalar mercadorias.'},
- archive:{n:'Estante mágica',e:'📚',w:4,d:3,price:2200,lv:19,desc:'Guarde lembranças e coleções da cidade.'}
+ archive:{n:'Estante mágica',e:'📚',w:4,d:3,price:2200,lv:19,desc:'Recolha páginas ilustradas para sua coleção.'}
 });
 export const MISSIONS=[
  {id:'m1',t:'Colher 10 plantações',k:'harvest',n:10,r:60},
@@ -463,27 +463,90 @@ FRUIT_TREE_ROWS.forEach(([fruit,n,e,fruitColor,leafColor],i)=>{
 });
 
 const EXTRA_BUILDINGS=[
- ['barn','Celeiro Vermelhinho','🐑',4,5,4,700,'Guarde colheitas e organize a fazenda.','barn'],
- ['silo','Silo de Grãos','🌾',5,3,3,850,'Armazene sementes e cereais.','silo'],
+ ['barn','Celeiro','🐑',4,5,4,700,'Recolha produtos dos animais da fazenda.','barn'],
+ ['silo','Silo de Grãos','🌾',5,3,3,850,'Recolha sacos de grãos para vender.','silo'],
  ['sheep_pen','Aprisco das Ovelhas','🐑',5,5,4,900,'Um cercado aconchegante para ovelhas fofinhas.','pen'],
- ['cow_barn','Estábulo das Vaquinhas','🐮',6,5,5,1200,'Celeiro espaçoso com vaquinhas decorativas.','barn'],
- ['chicken_coop','Galinheiro das Estrelinhas','🐔',5,4,4,800,'Galinhas passeiam pelo quintal.','pen'],
- ['duck_pond','Lago dos Patinhos','🦆',6,5,4,1050,'Lago com ponte e abrigo de patinhos.','pond'],
- ['bee_garden','Jardim das Abelhas','🐝',7,4,4,1100,'Colmeias coloridas para o pomar florescer.','garden'],
- ['goat_stable','Cabana das Cabras','🐐',7,5,4,1250,'Abrigo de madeira para cabrinhas curiosas.','barn'],
- ['rabbit_hutch','Casa dos Coelhos','🐰',6,4,3,920,'Casinha com cercadinho para coelhos.','pen'],
- ['orchard','Pomareiro Comunitário','🍎',5,5,5,950,'Um centro charmoso para cuidar das árvores frutíferas.','garden'],
- ['greenhouse','Estufa de Cristal','🌿',8,6,4,1800,'Estufa transparente para plantações delicadas.','glass'],
- ['flower_shop','Floricultura Catavento','💐',7,4,4,1300,'Loja florida com toldo e vasos coloridos.','shop'],
- ['cheese_house','Queijaria Miau','🧀',9,5,4,2200,'Pequena fábrica com roda de queijo na placa.','shop'],
- ['grain_mill','Moinho do Trigo','🌬️',8,5,5,1900,'Moinho de madeira com grandes pás decorativas.','mill'],
- ['jam_house','Fábrica de Geleias','🍯',8,4,4,1750,'Frascos coloridos e telhado de morango.','shop'],
- ['fish_pond','Viveiro dos Peixinhos','🐟',7,5,4,1500,'Tanque de água com peixes e pedras.','pond'],
- ['windmill','Moinho de Vento','🌾',10,5,5,2800,'Moinho alto com pás giratórias.','mill'],
- ['tailor_house','Ateliê dos Gatinhos','🧵',9,4,4,2100,'Ateliê de roupas com toldo e botão gigante.','shop'],
- ['cat_library','Biblioteca','📚',10,5,4,2500,'Biblioteca com janelas redondas e livros.','shop'],
- ['cat_hotel','Hotel dos Bigodes','🛎️',11,6,5,3200,'Hotel chibi para visitantes da vila.','hotel']
+ ['cow_barn','Estábulo das Vaquinhas','🐮',6,5,5,1200,'Recolha leite fresco das vaquinhas.','barn'],
+ ['chicken_coop','Galinheiro das Estrelinhas','🐔',5,4,4,800,'Recolha ovos caipiras das galinhas.','pen'],
+ ['duck_pond','Lago dos Patinhos','🦆',6,5,4,1050,'Recolha plumas macias dos patinhos.','pond'],
+ ['bee_garden','Jardim das Abelhas','🐝',7,4,4,1100,'Recolha mel produzido pelas colmeias.','garden'],
+ ['goat_stable','Cabana das Cabras','🐐',7,5,4,1250,'Recolha leite fresco das cabrinhas.','barn'],
+ ['rabbit_hutch','Casa dos Coelhos','🐰',6,4,3,920,'Recolha pelagens macias dos coelhos.','pen'],
+ ['orchard','Pomareiro Comunitário','🍎',5,5,5,950,'Recolha cestas de frutas do pomar.','garden'],
+ ['greenhouse','Estufa de Cristal','🌿',8,6,4,1800,'Cultive e recolha maços de ervas.','glass'],
+ ['flower_shop','Floricultura Catavento','💐',7,4,4,1300,'Monte e recolha buquês campestres.','shop'],
+ ['cheese_house','Queijaria','🧀',9,5,4,2200,'Produza e recolha queijos artesanais.','shop'],
+ ['grain_mill','Moinho do Trigo','🌬️',8,5,5,1900,'Triture e recolha sacos de farinha.','mill'],
+ ['jam_house','Fábrica de Geleias','🍯',8,4,4,1750,'Prepare e recolha geleias artesanais.','shop'],
+ ['fish_pond','Viveiro dos Peixinhos','🐟',7,5,4,1500,'Compre 20 espécies de peixes para sua coleção.','pond'],
+ ['windmill','Moinho de Vento','🌾',10,5,5,2800,'Produza sacos de farinha com as pás do moinho.','mill'],
+ ['tailor_house','Ateliê dos Gatinhos','🧵',9,4,4,2100,'Costure e recolha roupinhas para os gatos.','shop'],
+ ['cat_library','Biblioteca','📚',10,5,4,2500,'Recolha livros de histórias felinas.','shop'],
+ ['cat_hotel','Hotel','🛎️',11,6,5,3200,'Receba hóspedes e recolha gorjetas.','hotel']
 ];
 EXTRA_BUILDINGS.forEach(([id,n,e,lv,w,d,price,desc,style])=>{BUILD[id]={n,e,lv,w,d,price,desc,style}});
+export const GOODS={
+ milk:{n:'Leite fresco',e:'🥛',sell:12,xp:5},
+ cheese:{n:'Queijo',e:'🧀',sell:44,xp:14},
+ farm_eggs:{n:'Ovos caipiras',e:'🥚',sell:18,xp:5},
+ wool:{n:'Lã macia',e:'🧶',sell:24,xp:6},
+ duck_down:{n:'Plumas de pato',e:'🪶',sell:20,xp:5},
+ honey:{n:'Mel silvestre',e:'🍯',sell:30,xp:8},
+ goat_milk:{n:'Leite de cabra',e:'🥛',sell:26,xp:7},
+ rabbit_fur:{n:'Pelagem de coelho',e:'🐇',sell:22,xp:6},
+ grain_sack:{n:'Saco de grãos',e:'🌾',sell:28,xp:7},
+ fruit_crate:{n:'Cesta de frutas',e:'🧺',sell:36,xp:8},
+ herb_bundle:{n:'Maço de ervas',e:'🌿',sell:32,xp:8},
+ flower_bouquet:{n:'Buquê campestre',e:'💐',sell:34,xp:8},
+ flour_sack:{n:'Saco de farinha',e:'🌾',sell:30,xp:7},
+ berry_jam:{n:'Geleia artesanal',e:'🍯',sell:42,xp:10},
+ guest_pass:{n:'Convite de hóspede',e:'🎟️',sell:25,xp:6},
+ cat_accessory:{n:'Acessório de gatinho',e:'👒',sell:38,xp:8},
+ rest_token:{n:'Vale-descanso',e:'🛏️',sell:20,xp:5},
+ star_fragment:{n:'Fragmento estelar',e:'🌟',sell:55,xp:12},
+ night_token:{n:'Ficha do mercado noturno',e:'🏮',sell:32,xp:8},
+ archive_page:{n:'Página ilustrada',e:'📜',sell:28,xp:7},
+ outfit:{n:'Roupa de gatinho',e:'🧵',sell:46,xp:10},
+ cat_book:{n:'Livro de histórias felinas',e:'📚',sell:40,xp:9},
+ hotel_tip:{n:'Gorjeta do hotel',e:'🪙',sell:50,xp:10}
+};
+export const BUILDING_PRODUCERS={
+ barn:{item:'farm_eggs',interval:35,amount:2},
+ silo:{item:'grain_sack',interval:40,amount:1},
+ sheep_pen:{item:'wool',interval:40,amount:1},
+ cow_barn:{item:'milk',interval:35,amount:2},
+ chicken_coop:{item:'farm_eggs',interval:30,amount:2},
+ duck_pond:{item:'duck_down',interval:35,amount:2},
+ bee_garden:{item:'honey',interval:35,amount:1},
+ goat_stable:{item:'goat_milk',interval:38,amount:1},
+ rabbit_hutch:{item:'rabbit_fur',interval:35,amount:1},
+ orchard:{item:'fruit_crate',interval:45,amount:1},
+ greenhouse:{item:'herb_bundle',interval:35,amount:1},
+ flower_shop:{item:'flower_bouquet',interval:40,amount:1},
+ cheese_house:{item:'cheese',interval:45,amount:1},
+ grain_mill:{item:'flour_sack',interval:40,amount:1},
+ jam_house:{item:'berry_jam',interval:45,amount:1},
+ windmill:{item:'flour_sack',interval:35,amount:2},
+ housing:{item:'guest_pass',interval:50,amount:1},
+ wardrobe:{item:'cat_accessory',interval:45,amount:1},
+ resthouse:{item:'rest_token',interval:40,amount:1},
+ dairy:{item:'milk',interval:30,amount:2},
+ observatory:{item:'star_fragment',interval:55,amount:1},
+ nightmarket:{item:'night_token',interval:45,amount:1},
+ flowergarden:{item:'flower_bouquet',interval:35,amount:1},
+ archive:{item:'archive_page',interval:45,amount:1},
+ cat_hotel:{item:'hotel_tip',interval:50,amount:1},
+ cat_library:{item:'cat_book',interval:45,amount:1},
+ tailor_house:{item:'outfit',interval:45,amount:1}
+};
+export const FISH=[
+ ['sardinha','Sardinha','🐟',1,35],['tilapia','Tilápia','🐠',1,40],['carpa','Carpa','🐟',2,45],
+ ['lambari','Lambari','🐟',2,50],['bagre','Bagre','🐟',3,55],['truta','Truta','🐟',3,60],
+ ['robalo','Robalo','🐠',4,70],['dourado','Dourado','🐟',4,75],['atum','Atum','🐟',5,85],
+ ['peixe_palhaco','Peixe-palhaço','🐠',5,90],['baiacu','Baiacu','🐡',6,100],['enguia','Enguia','🐍',6,110],
+ ['lula','Lula','🦑',7,125],['polvo','Polvo','🐙',7,140],['cavalo_marinho','Cavalo-marinho','🐠',8,160],
+ ['peixe_lua','Peixe-lua','🐟',8,180],['peixe_espada','Peixe-espada','🐠',9,210],['arraia','Arraia','🐟',9,240],
+ ['celacanto','Celacanto','🐟',10,300],['peixe_arco_iris','Peixe-arco-íris','🌈',11,400]
+].map(([id,n,e,lv,sell])=>{GOODS[id]={n,e,lv,sell,cost:sell*2,xp:Math.ceil(sell/8)};return{id,n,e,lv,sell,cost:sell*2}});
 export const LEVEL_MISSIONS=Array.from({length:50},(_,i)=>{const lv=i+1;return{id:'level_'+lv,t:`Alcance o nível ${lv}`,k:'lv',n:lv,r:40+lv*18,unlock:lv}});
 export const activeMissions=lv=>[...MISSIONS,...LEVEL_MISSIONS.filter(m=>m.unlock<=lv)];

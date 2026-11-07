@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {mk,sprite,glow,W,GRAD} from './world.js';
 import {S} from './state.js';
 import {BUILD,CROPS,DECOR} from './data.js';
-import {growProg} from './systems.js?v=3';
+import {growProg} from './systems.js?v=4';
 const {Group,CylinderGeometry:Cy,SphereGeometry:Sp,ConeGeometry:Co,BoxGeometry:Bx,TorusGeometry:To}=THREE;
 const C={cream:0xfff3d6,pink:0xffb3c7,blue:0xa8d8ff,yel:0xffe28a,green:0xb8e6a1,soil:0x9c6b4a,white:0xffffff,red:0xff8a8a,lav:0xd9c2ff,mint:0xbdf0d4,brown:0xb98a68};
 const PI=Math.PI;

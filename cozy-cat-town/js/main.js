@@ -3,11 +3,11 @@ import {W,init as initWorld,setDay,tickWorld,render,label,sweep,burst,clearFlowe
 import * as A from './assets.js';
 import {S,load,save,bus,emit} from './state.js';
 import {DAY_SEC,CATS,RECIPES,DECOR} from './data.js';
-import * as G from './systems.js?v=3';
+import * as G from './systems.js?v=4';
 import {makeBuilding,makeDecor,rectOf} from './buildings.js';
 import {CatEnt,CustEnt,MoneyCat} from './cats.js';
 import * as P from './place.js?v=12';
-import * as UI from './ui.js?v=21';
+import * as UI from './ui.js?v=22';
 const bv=new Map(),dv=new Map(),cats=new Map(),custs=new Map();let money=null,pelican=null,nextMoney=Date.now()+45000,gameStarted=false;
 function makePelican(){const g=new THREE.Group(),mat=c=>new THREE.MeshToonMaterial({color:c});g.userData.ref={t:'pelican'};
  const body=new THREE.Mesh(new THREE.SphereGeometry(.62,12,9),mat(0xfff8e8));body.scale.set(1,1.15,1.25);body.position.y=.88;g.add(body);

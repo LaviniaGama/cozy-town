@@ -4,7 +4,7 @@ import * as A from './assets.js';
 import {S} from './state.js';
 import {CATS,RECIPES} from './data.js';
 import {front,blocked} from './buildings.js';
-import * as G from './systems.js?v=3';
+import * as G from './systems.js?v=4';
 class Actor{
  constructor(key,tint,ref,h){this.g=new THREE.Group();this.w=A.actor(key,{tint,h});this.g.add(this.w);
   const p=new THREE.Mesh(new THREE.SphereGeometry(.85,8,6),new THREE.MeshBasicMaterial({visible:false}));p.position.y=.75;this.g.add(p);

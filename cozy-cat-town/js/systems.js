@@ -1,5 +1,5 @@
 import {S,emit,nid} from './state.js';
-import {CROPS,RECIPES,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,STORY,PASS_TASKS,activeMissions} from './data.js';
+import {CROPS,RECIPES,GOODS,FISH,BUILDING_PRODUCERS,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,STORY,PASS_TASKS,activeMissions} from './data.js';
 export const now=()=>Date.now();
 export const toast=(m,k='ok')=>emit('toast',{m,k});
 export const xpNeed=l=>40+l*35;
@@ -8,8 +8,8 @@ export function addXp(n){S.xp+=n;while(S.xp>=xpNeed(S.lv)){S.xp-=xpNeed(S.lv);S.
 export function addItem(k,n=1){S.inv[k]=(S.inv[k]||0)+n;emit('inv')}
 export const have=i=>Object.entries(i).every(([k,n])=>(S.inv[k]||0)>=n);
 export const getB=id=>S.buildings.find(b=>b.id===id);
-export const nameOf=k=>(CROPS[k]||RECIPES[k]||{}).n||k;
-export const emojiOf=k=>(CROPS[k]||RECIPES[k]||{}).e||'❔';
+export const nameOf=k=>(CROPS[k]||RECIPES[k]||GOODS[k]||{}).n||k;
+export const emojiOf=k=>(CROPS[k]||RECIPES[k]||GOODS[k]||{}).e||'❔';
 export function speed(b){const c=b.cat&&S.cats[b.cat];let s=1+.2*(b.lv-1);if(c){s*=1.1+.1*c.lv;if(CATS[b.cat].skill===b.type)s*=1.15}return s}
 // farming
 export const growProg=(p,t=now())=>Math.min(1,(t-p.at)/(p.end-p.at));
@@ -39,7 +39,7 @@ export const upCost=b=>Math.round(120*b.lv*b.lv*(b.type==='restaurant'?1.5:1));
 export function upgrade(bid){const b=getB(bid);if(!b||b.lv>=5)return false;const c=upCost(b);
  if(S.coins<c){toast('Moedas insuficientes','bad');return false}S.coins-=c;b.lv++;emit('hud');toast('Melhorado para o nível '+b.lv+'! ✨');return true}
 // economy
-const price=k=>(CROPS[k]||RECIPES[k]||{sell:0}).sell;
+const price=k=>(CROPS[k]||RECIPES[k]||GOODS[k]||{sell:0}).sell;
 export function sell(k,all){const n=all?(S.inv[k]||0):Math.min(1,S.inv[k]||0);if(!n)return;S.inv[k]-=n;addCoins(n*price(k));emit('inv')}
 export function buySeeds(k,pack=5){const c=CROPS[k];if(!c||S.lv<c.lv){toast(c?'Nível '+c.lv+' necessário':'Semente indisponível','bad');return false}
  const cost=c.seed*pack;if(S.coins<cost){toast('Moedas insuficientes para comprar as sementes.','bad');return false}
@@ -59,7 +59,23 @@ export function pet(id){const t=now();if(petCd[id]>t)return 0;petCd[id]=t+2500;S
 // build & decor
 export function buyBuilding(type,x,z,r){const d=BUILD[type];if(S.lv<d.lv||S.coins<d.price){toast(S.lv<d.lv?'Nível '+d.lv+' necessário':'Moedas insuficientes','bad');return null}
  S.coins-=d.price;const b={id:nid(),type,x,z,r,lv:1,cat:null};if(type==='farm')b.plots=Array(6).fill(null);
+ if(BUILDING_PRODUCERS[type])b.readyAt=now()+BUILDING_PRODUCERS[type].interval*1000/speed(b);
  if(['kitchen','bakery','dairy','packing','toolshop'].includes(type)){b.cur=null;b.q=[]}S.buildings.push(b);S.stats.build++;emit('sync');emit('hud');toast(d.n+' construído! 🏠');return b}
+export const productionStatus=id=>{const b=getB(id),spec=b&&BUILDING_PRODUCERS[b.type];if(!b||!spec)return null;
+ const readyAt=b.readyAt||0;return{b,spec,readyAt,remaining:Math.max(0,readyAt-now()),ready:readyAt<=now(),amount:spec.amount+Math.floor((b.lv-1)/2)}};
+export function collectBuilding(id){const status=productionStatus(id);if(!status)return false;
+ if(!status.ready){toast(`${GOODS[status.spec.item].n}: pronto em ${Math.ceil(status.remaining/1000)}s.`);return false}
+ const {b,spec,amount}=status,good=GOODS[spec.item],n=amount+(b.cat?1:0);
+ addItem(spec.item,n);addXp(good.xp*n);b.readyAt=now()+spec.interval*1000/speed(b);
+ toast(`Recolheu ${n} ${good.n.toLowerCase()}! ${good.e}`);emit('production',{id,item:spec.item,n});return true}
+export function buyFish(id,key){const b=getB(id),fish=FISH.find(x=>x.id===key);if(!b||b.type!=='fish_pond'||!fish)return false;
+ if(S.lv<fish.lv){toast(`Nível ${fish.lv} necessário para este peixe.`,'bad');return false}
+ if(S.coins<fish.cost){toast('Moedas insuficientes para comprar este peixe.','bad');return false}
+ S.coins-=fish.cost;addItem(key);addXp(GOODS[key].xp);emit('hud');toast(`Comprou ${fish.n} por ${fish.cost} 🪙 ${fish.e}`);return true}
+export function catchFish(id){const b=getB(id);if(!b||b.type!=='fishery')return false;
+ const available=FISH.filter(f=>f.lv<=S.lv),fish=available[Math.random()*available.length|0],cost=Math.ceil(fish.cost*1.25);
+ if(S.coins<cost){toast(`A pescaria custa ${cost} moedas.`,'bad');return false}
+ S.coins-=cost;addItem(fish.id);addXp(GOODS[fish.id].xp);emit('hud');toast(`Pescou ${fish.n}! −${cost} 🪙 ${fish.e}`);return true}
 export function buyDecor(t,decorColor){const d=DECOR[t];if(!d)return false;if(S.coins<d.price){toast('Moedas insuficientes','bad');return false}S.coins-=d.price;S.decoInv[t]=(S.decoInv[t]||0)+1;(S.decoInvColors[t]||(S.decoInvColors[t]=[])).push(decorColor??null);emit('hud');emit('inv');return true}
 export const peekDecorColor=t=>S.decoInvColors[t]?.[S.decoInvColors[t].length-1];
 export function placeDecor(t,x,z,r,decorColor){if(!(S.decoInv[t]>0))return null;S.decoInv[t]--;const savedColor=S.decoInvColors[t]?.pop(),color=decorColor??savedColor,d={id:nid(),type:t,x,z,r};
@@ -133,7 +149,7 @@ const DELIVERY_POOL=[
 export function deliveryOrder(){if(!S.delivery.current){if(S.delivery.completed===0)S.delivery.current={items:{wheat:1,carrot:1},created:now()};else{const pool=DELIVERY_POOL.filter(x=>x.lv<=S.lv).map(x=>x.k),picked=[];while(picked.length<2&&pool.length){const i=Math.random()*pool.length|0;picked.push(pool.splice(i,1)[0])}const items={};for(const k of picked)items[k]=1;S.delivery.current={items,created:now()}}}return S.delivery.current}
 export const canDeliver=()=>Object.entries(deliveryOrder().items).every(([k,n])=>(S.inv[k]||0)>=n);
 export function deliverOrder(){if(S.lv<3){toast('O pelicano chega no nível 3.','bad');return false}const o=deliveryOrder();if(!canDeliver()){toast('Ainda faltam produtos para este pedido.','bad');return false}
- let reward=35,xp=12;for(const[k,n]of Object.entries(o.items)){S.inv[k]-=n;const d=CROPS[k]||RECIPES[k];reward+=d.sell*n;xp+=d.xp||0}
+ let reward=35,xp=12;for(const[k,n]of Object.entries(o.items)){S.inv[k]-=n;const d=CROPS[k]||RECIPES[k]||GOODS[k];reward+=d.sell*n;xp+=d.xp||0}
  reward=Math.round(reward*1.5);S.delivery.completed++;S.delivery.current=null;S.stats.delivery++;addCoins(reward);addXp(xp);emit('inv');emit('delivery');checkStory();toast(`Pedido entregue! +${reward} moedas e +${xp} XP.`);return true}
 export function storyStep(){return STORY[Math.min(S.story,STORY.length-1)]}
 export function startStory(){if(S.story===0){S.story=1;emit('story');checkStory()} }

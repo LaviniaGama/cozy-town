@@ -16,6 +16,8 @@ Botão esquerdo e arrastar = girar a câmera · Botão direito e arrastar = move
 - A vila começa com três gatinhos de aparência diferente; novos gatos chegam ao serem adotados.
 - A loja da fazenda oferece 49 plantações, pacotes de sementes e 30 árvores frutíferas; há 100 receitas para produzir e pesquisar.
 - Construa 20 instalações novas, guarde ou venda construções e decorações, e mova ou gire construções, pisos e objetos. Os canteiros e seu progresso são preservados ao guardar uma horta.
+- As instalações têm atividades próprias: celeiros e abrigos produzem itens de animais; a fazenda de leite e a queijaria oferecem leite e queijo; moinhos, estufa, pomar, floricultura, ateliê, biblioteca e outros prédios geram produtos para recolher e vender. Melhore os prédios para aumentar a produção e atribua um gato para acelerar a coleta.
+- O viveiro permite comprar 20 espécies de peixes, desbloqueadas por nível; a área de pesca oferece uma pescaria paga aleatória. Os peixes e demais produtos coletados aparecem no inventário e podem ser vendidos.
 - Decore com mais de 400 itens organizados por categoria e busca. Cada categoria recebeu 20 novas peças; há 50 formatos de flores, 20 árvores ornamentais adicionais e 50 cores para personalizar flores, árvores e outros enfeites.
 - Cada item pode ser comprado no acabamento original ou personalizado: escolha a cor antes de comprar e ela acompanha o objeto quando colocado, guardado ou movido. Os itens que já começam na fazenda também estão disponíveis no catálogo. Árvores frutíferas aparecem somente na loja da fazenda.
 - Novas vilas começam com construções e enfeites organizados em áreas separadas; canteiros de flores do cenário e árvores de borda seguem um arranjo regular.

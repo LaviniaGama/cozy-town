@@ -1,7 +1,7 @@
 import {S,save,reset,emit,bus,hasSave} from './state.js';
-import {CROPS,RECIPES,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,PASS_TASKS,FRUIT_TREES,FLOWER_COLORS,activeMissions} from './data.js';
+import {CROPS,RECIPES,GOODS,FISH,BUILDING_PRODUCERS,CATS,DECOR,BUILD,MISSIONS,ACH,MILESTONES,PASS_TASKS,FRUIT_TREES,FLOWER_COLORS,activeMissions} from './data.js';
 import {W} from './world.js';
-import * as G from './systems.js?v=3';
+import * as G from './systems.js?v=4';
 import * as P from './place.js?v=12';
 const $=id=>document.getElementById(id);
 export const ui={panel:null,seed:'wheat',recipeQuery:'',cookAmounts:{},decorCategory:'all',decorSearch:'',flowerType:'',decorColorType:''};
@@ -39,12 +39,18 @@ function restH(b){let h=`<div class="sub">Gorjetas +${Math.round(15*(b.lv-1))}% 
  if(!G.CUST.length)h+='<div class="sub">Nenhum cliente no momento… 🐱🍓</div>';
  for(const c of G.CUST){const ok=S.inv[c.want]>0;h+=`<div class="item"><span class="em">${{strawberryCat:'🍓',banana:'🍌',persian:'🐱'}[c.model||c.kind]||'🐱'}</span><div>Quer <b>${RECIPES[c.want].e} ${RECIPES[c.want].n}</b>${bar(1-(Date.now()-c.born)/c.pat)}</div><button data-a="serve" data-id="${c.id}" class="${ok?'':'dim'}">Servir</button></div>`}
  return h}
+function producerH(b){const status=G.productionStatus(b.id),good=GOODS[status.spec.item],duration=status.spec.interval*1000/G.speed(b);
+ return `<div class="card2"><h4>${good.e} ${good.n}</h4><p>${status.ready?'Produção pronta para recolher.':`Próxima coleta em ${fmt(status.remaining)}.`}</p>${bar(status.ready?1:1-status.remaining/duration)}<small>Quantidade por coleta: ${status.amount+(b.cat?1:0)}</small><button class="big" data-a="collectBuilding" data-id="${b.id}" ${status.ready?'':'disabled'}>📦 Recolher ${good.n.toLowerCase()}</button></div>`}
+function fishPondH(b){return `<div class="sub">Escolha entre 20 espécies. Cada peixe custa moedas e vai para o inventário.</div><div class="fish-list">${FISH.map(f=>{const locked=S.lv<f.lv;return `<div class="item ${locked?'lock':''}"><span class="em">${f.e}</span><div><b>${f.n}</b><br><small>${locked?'🔒 Nível '+f.lv:`🪙 ${f.cost}`}</small></div><button data-a="buyFish" data-id="${b.id}" data-k="${f.id}" ${locked||S.coins<f.cost?'disabled':''}>Comprar</button></div>`}).join('')}</div>`}
+function fisheryH(b){const available=FISH.filter(f=>f.lv<=S.lv),cost=Math.ceil(available[0].cost*1.25);
+ return `<div class="card2"><h4>🎣 Pesca paga</h4><p>Pague para pescar uma espécie aleatória entre as ${available.length} já desbloqueadas. O peixe vai para o inventário.</p><button class="big" data-a="catchFish" data-id="${b.id}">Lançar a linha · a partir de 🪙 ${cost}</button></div>`}
 function bPanel(b){let h=`<div class="sub">Nível ${b.lv} · Velocidade ×${G.speed(b).toFixed(2)}</div>`;
- h+=b.type==='farm'?farmH(b):b.type==='restaurant'?restH(b):['kitchen','bakery','dairy','packing','toolshop'].includes(b.type)?prodH(b):`<div class="card2">${BUILD[b.type].e} ${BUILD[b.type].desc||'Uma nova parte da vila para explorar.'}</div>`;
+ h+=b.type==='farm'?farmH(b):b.type==='restaurant'?restH(b):['kitchen','bakery','packing','toolshop'].includes(b.type)?prodH(b):b.type==='fish_pond'?fishPondH(b):b.type==='fishery'?fisheryH(b):BUILDING_PRODUCERS[b.type]?producerH(b):`<div class="card2">${BUILD[b.type].e} ${BUILD[b.type].desc||'Uma nova parte da vila para explorar.'}</div>`;
  h+=`<div class="row"><button data-a="storeB" data-id="${b.id}">📦 Guardar</button><button data-a="sellB" data-id="${b.id}">🪙 Vender</button></div>`;
  return h+catSel(b)+upBtn(b)}
 function invH(){let h='';const sec=(t,o)=>{const e=Object.entries(o).filter(([k])=>S.inv[k]>0);h+=`<h4>${t}</h4>`+(e.length?e.map(([k,x])=>`<div class="item"><span class="em">${x.e}</span><div><b>${x.n}</b> ×${S.inv[k]}<br><small>🪙${x.sell} cada</small></div><button data-a="sell" data-k="${k}">Vender 1</button><button data-a="sellAll" data-k="${k}">Tudo</button></div>`).join(''):'<div class="sub">vazio</div>')};
- sec('Ingredientes',CROPS);sec('Pratos',RECIPES);h+='<h4>Decorações guardadas</h4>';const d=Object.entries(S.decoInv).filter(([,n])=>n>0);
+ const dishes=Object.fromEntries(Object.entries(RECIPES).filter(([k])=>!GOODS[k]));
+ sec('Ingredientes',CROPS);sec('Pratos',dishes);sec('Produtos da vila e peixes',GOODS);h+='<h4>Decorações guardadas</h4>';const d=Object.entries(S.decoInv).filter(([,n])=>n>0);
  h+='<h4>Sementes</h4>'+Object.entries(S.seeds).filter(([,n])=>n>0).map(([k,n])=>`<div class="item"><span class="em">${CROPS[k].e}</span><div><b>${CROPS[k].n}</b> ×${n}</div><button data-a="open" data-id="shop">Comprar mais</button></div>`).join('');
  h+='<h4>Construções armazenadas</h4>'+S.storedBuildings.map(b=>`<div class="item"><span class="em">${BUILD[b.type].e}</span><div><b>${BUILD[b.type].n}</b></div><button data-a="placeStored" data-id="${b.id}">Colocar</button></div>`).join('');
  return h+(d.length?d.map(([k,n])=>`<div class="item"><span class="em">${DECOR[k].e}</span><div><b>${DECOR[k].n}</b> ×${n}</div><button data-a="placeDecor" data-k="${k}">Colocar</button></div>`).join(''):'<div class="sub">nenhuma — compre na loja de decoração</div>')}
@@ -130,6 +136,7 @@ const H={
  cook:d=>{G.cook(d.id,d.k,ui.cookAmounts[`${d.id}:${d.k}`]||1);render()},upgrade:d=>{G.upgrade(d.id);render()},sell:d=>{G.sell(d.k);render()},sellAll:d=>{G.sell(d.k,true);render()},
  buyDecor:d=>{G.buyDecor(d.k);render()},buyDecorCustom:d=>{const spec=DECOR[d.k],color=S.options.decorColors[d.k]??(spec.form==='flower'?S.options.flowerColor:spec.color);ui.decorColorType=d.k;if(G.buyDecor(d.k,color)){S.options.decorColors[d.k]=color;close();P.startPlace('d',d.k,color)}else render()},placeDecor:d=>{const spec=DECOR[d.k],inventoryColor=G.peekDecorColor(d.k),color=inventoryColor!==undefined?inventoryColor:S.options.decorColors[d.k]??(spec.form==='flower'?S.options.flowerColor:undefined);close();P.startPlace('d',d.k,color)},build:d=>{close();P.startPlace('b',d.k)},
  unlockCat:d=>{G.unlockCat(d.k);render()},catUp:d=>{G.catUp(d.k);render()},claim:d=>{G.claim(d.id);render()},serve:d=>{G.serve(d.id);render()},
+ collectBuilding:d=>{G.collectBuilding(d.id);render()},buyFish:d=>{G.buyFish(d.id,d.k);render()},catchFish:d=>{G.catchFish(d.id);render()},
  money:()=>emit('money'),b_ok:()=>P.confirm(),b_rot:()=>P.rotate(),b_cancel:()=>P.cancel(),b_store:()=>P.store(),b_done:()=>{P.P.sel=null;emit('mode')},
  toggleTime:()=>{S.options=S.options||{};S.options.freezeTime=!S.options.freezeTime;render()},
  speedTime:()=>{S.options=S.options||{};S.options.clockSpeed=({1:2,2:4,4:1}[S.options.clockSpeed||1]);render()},
@@ -153,7 +160,8 @@ export function init(){
  bus.addEventListener('toast',e=>{const d=document.createElement('div');d.className='toast '+(e.detail.k||'');d.textContent=e.detail.m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),2600)});
  bus.addEventListener('saveError',()=>G.toast('Não foi possível salvar. Verifique o espaço do navegador.','bad'));
  bus.addEventListener('levelup',e=>{G.toast('🎉 Nível '+e.detail+'! Novidades desbloqueadas')});
- bus.addEventListener('close',close);bus.addEventListener('inv',render);bus.addEventListener('assign',render);bus.addEventListener('story',render);bus.addEventListener('delivery',render);bus.addEventListener('pass',render)}
+ bus.addEventListener('close',close);bus.addEventListener('inv',render);bus.addEventListener('assign',render);bus.addEventListener('story',render);bus.addEventListener('delivery',render);bus.addEventListener('pass',render);
+ setInterval(()=>{if(ui.panel?.type==='b'&&BUILDING_PRODUCERS[G.getB(ui.panel.id)?.type])render()},1000)}
 export function hud(){const need=G.xpNeed(S.lv),h=S.clock*24,hh=Math.floor(h),mm=Math.floor((h-hh)*60);
  $('lv').textContent=S.lv;$('xpb').style.width=(S.xp/need*100)+'%';$('coins').textContent=Math.floor(S.coins);
  $('clock').textContent=(h>=6&&h<17?'☀️':h>=17&&h<20?'🌇':'🌙')+' '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
