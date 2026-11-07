@@ -4,7 +4,7 @@ import {W} from './world.js';
 import * as G from './systems.js';
 import * as P from './place.js';
 const $=id=>document.getElementById(id);
-export const ui={panel:null,seed:'wheat',recipeQuery:'',decorCategory:'all',decorSearch:'',flowerType:'',treeType:'',decorColorType:''};
+export const ui={panel:null,seed:'wheat',recipeQuery:'',cookAmounts:{},decorCategory:'all',decorSearch:'',flowerType:'',treeType:'',decorColorType:''};
 const bar=p=>`<div class="pb"><i style="width:${Math.round(Math.max(0,Math.min(1,p))*100)}%"></i></div>`;
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):s+'s'};
 const ing=i=>Object.entries(i).map(([k,n])=>`<span class="${(S.inv[k]||0)>=n?'':'lack'}">${G.emojiOf(k)}${n}</span>`).join(' ');
@@ -31,9 +31,9 @@ function farmH(b){const t=Date.now(),cropEntries=Object.entries(CROPS),grouped=c
  return h+`</div><div class="row"><button data-a="plantAll" data-id="${b.id}">🌱 Plantar tudo</button><button data-a="harvestAll" data-id="${b.id}">✂ Colher tudo</button></div><div class="sub">Rende ${2+(b.lv>=3?1:0)+(b.lv>=5?1:0)} por colheita</div>`}
 function prodH(b){const t=Date.now(),q=ui.recipeQuery.toLowerCase();let h=`<label class="recipe-search">🔎 <input type="search" data-role="recipe-filter" placeholder="Buscar entre 100 receitas" value="${ui.recipeQuery.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}"></label>`;
  if(b.cur){const r=RECIPES[b.cur.r];h+=`<div class="card2">Preparando ${r.e} <b>${r.n}</b>${bar((t-b.cur.s)/(b.cur.e-b.cur.s))}<small>${fmt(b.cur.e-t)}</small></div>`}else h+='<div class="sub">Cozinha livre — escolha uma receita!</div>';
- if(b.q.length)h+=`<div class="sub">Na fila: ${b.q.map(k=>RECIPES[k].e).join(' ')} (${(b.cur?1:0)+b.q.length}/${G.cap(b)})</div>`;
- for(const[k,r]of Object.entries(RECIPES)){if(r.b!==b.type)continue;const lock=S.lv<r.lv;
-  h+=`<div class="item recipe-row ${lock?'lock':''}" data-recipe-name="${r.n.toLowerCase()}" ${r.n.toLowerCase().includes(q)?'':'hidden'}><span class="em">${r.e}</span><div><b>${r.n}</b><br><small>${lock?'🔒 Nível '+r.lv:ing(r.in)+' · ⏱'+fmt(r.t*1000/G.speed(b))+' · 🪙'+r.sell}</small></div>${lock?'':`<button data-a="cook" data-id="${b.id}" data-k="${k}">Cozinhar</button>`}</div>`}
+ if(b.q.length){const queued=new Map();for(const item of b.q){const id=typeof item==='string'?item:item.r;queued.set(id,(queued.get(id)||0)+(typeof item==='string'?1:item.n))}h+=`<div class="sub">Na fila: ${[...queued].map(([id,n])=>`${RECIPES[id].e} ×${n}`).join(' · ')}</div>`}
+ for(const[k,r]of Object.entries(RECIPES)){if(r.b!==b.type)continue;const lock=S.lv<r.lv,ingredients=Object.entries(r.in),batchMax=ingredients.length?Math.min(Number.MAX_SAFE_INTEGER,...ingredients.map(([item,n])=>Math.floor((S.inv[item]||0)/n))):null,batchKey=`${b.id}:${k}`,amount=batchMax===null?ui.cookAmounts[batchKey]||1:Math.min(ui.cookAmounts[batchKey]||1,batchMax||1),max=batchMax===null?'':`max="${batchMax}"`;
+  h+=`<div class="item recipe-row ${lock?'lock':''}" data-recipe-name="${r.n.toLowerCase()}" ${r.n.toLowerCase().includes(q)?'':'hidden'}><span class="em">${r.e}</span><div><b>${r.n}</b><br><small>${lock?'🔒 Nível '+r.lv:ing(r.in)+' · ⏱'+fmt(r.t*1000/G.speed(b))+' · 🪙'+r.sell}</small></div>${lock?'':`<label class="cook-count">× <input type="number" data-role="cook-quantity" data-id="${b.id}" data-k="${k}" aria-label="Quantidade de ${r.n}" min="1" step="1" ${max} value="${amount}" ${batchMax!==null&&batchMax<1?'disabled':''}></label><button data-a="cook" data-id="${b.id}" data-k="${k}" ${batchMax!==null&&batchMax<1?'disabled':''}>Cozinhar</button>`}</div>`}
  return h}
 function restH(b){let h=`<div class="sub">Gorjetas +${Math.round(15*(b.lv-1))}% · até ${Math.min(5,2+b.lv)} clientes</div>`;
  if(!G.CUST.length)h+='<div class="sub">Nenhum cliente no momento… 🐱🍓</div>';
@@ -117,7 +117,7 @@ const H={
  moveMode:()=>P.toggleMove(),decorCategory:d=>{ui.decorCategory=d.k;render()},chooseTree:d=>{if(['tree','pine'].includes(DECOR[d.k]?.form)){ui.treeType=d.k;ui.decorColorType=d.k;render()}},chooseDecorColor:d=>{if(DECOR[d.k]){ui.decorColorType=d.k;render()}},decorColor:d=>{const n=Number(d.color),type=ui.decorColorType;if(DECOR[type]&&FLOWER_COLORS.some(c=>c.color===n)){S.options.decorColors[type]=n;if(DECOR[type].form==='flower')S.options.flowerColor=n;render()}},flowerColor:d=>{const n=Number(d.color);if(FLOWER_COLORS.some(c=>c.color===n)){S.options.flowerColor=n;render()}},sellSelected:()=>{if(P.P.sel&&confirm('Vender esta decoração por metade do valor original?'))P.sell()},
  harvestTree:d=>{G.harvestTree(d.id);render()},placeStored:d=>{close();P.startStored(d.id)},
  plant:d=>{G.plant(d.id,+d.i,ui.seed);render()},harvest:d=>{G.harvest(d.id,+d.i);render()},plantAll:d=>{G.plantAll(d.id,ui.seed);render()},harvestAll:d=>{G.harvestAll(d.id);render()},
- cook:d=>{G.cook(d.id,d.k);render()},upgrade:d=>{G.upgrade(d.id);render()},sell:d=>{G.sell(d.k);render()},sellAll:d=>{G.sell(d.k,true);render()},
+ cook:d=>{G.cook(d.id,d.k,ui.cookAmounts[`${d.id}:${d.k}`]||1);render()},upgrade:d=>{G.upgrade(d.id);render()},sell:d=>{G.sell(d.k);render()},sellAll:d=>{G.sell(d.k,true);render()},
  buyDecor:d=>{G.buyDecor(d.k);render()},buyDecorCustom:d=>{const spec=DECOR[d.k],color=S.options.decorColors[d.k]??(spec.form==='flower'?S.options.flowerColor:spec.color);ui.decorColorType=d.k;if(G.buyDecor(d.k,color)){S.options.decorColors[d.k]=color;close();P.startPlace('d',d.k,color)}else render()},placeDecor:d=>{const spec=DECOR[d.k],inventoryColor=G.peekDecorColor(d.k),color=inventoryColor!==undefined?inventoryColor:S.options.decorColors[d.k]??(spec.form==='flower'?S.options.flowerColor:undefined);close();P.startPlace('d',d.k,color)},build:d=>{close();P.startPlace('b',d.k)},
  unlockCat:d=>{G.unlockCat(d.k);render()},catUp:d=>{G.catUp(d.k);render()},claim:d=>{G.claim(d.id);render()},serve:d=>{G.serve(d.id);render()},
  money:()=>emit('money'),b_ok:()=>P.confirm(),b_rot:()=>P.rotate(),b_cancel:()=>P.cancel(),b_store:()=>P.store(),b_done:()=>{P.P.sel=null;emit('mode')},
@@ -139,6 +139,7 @@ export function init(){
  $('panel').addEventListener('click',e=>{if(e.target===$('panel'))close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(ui.panel)close();else if(P.P.mode)P.cancel();else if(P.P.sel)P.P.sel=null}});
  document.addEventListener('change',e=>{const el=e.target;if(el.tagName==='SELECT'&&el.dataset.a==='assign'){G.assign(el.dataset.id,el.value);render()}});
+ document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-role="cook-quantity"]')){const value=Number(el.value);if(Number.isSafeInteger(value)&&value>0)ui.cookAmounts[`${el.dataset.id}:${el.dataset.k}`]=value}});
  bus.addEventListener('toast',e=>{const d=document.createElement('div');d.className='toast '+(e.detail.k||'');d.textContent=e.detail.m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),2600)});
  bus.addEventListener('saveError',()=>G.toast('Não foi possível salvar. Verifique o espaço do navegador.','bad'));
  bus.addEventListener('levelup',e=>{G.toast('🎉 Nível '+e.detail+'! Novidades desbloqueadas')});

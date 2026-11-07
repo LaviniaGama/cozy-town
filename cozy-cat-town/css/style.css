@@ -68,6 +68,8 @@ button:disabled{opacity:.5;filter:grayscale(.25);cursor:not-allowed}
 #dock button:focus-visible,button:focus-visible{outline:3px solid #6f9ed1;outline-offset:2px}
 .item button,.row button,.big,.chip{transition:filter .15s,transform .15s}
 .item button:hover,.row button:hover,.big:hover,.chip:hover{filter:brightness(1.035) saturate(1.1)}
+.cook-count{display:flex;flex:0 0 auto!important;align-items:center;gap:4px;white-space:nowrap;font-weight:700}
+.cook-count input{width:88px;min-width:0;padding:6px;border:2px solid #f1d5d0;border-radius:12px;background:#fff;color:var(--ink);font-size:15px}
 .item small{line-height:1.45}
 .item .em{background:linear-gradient(145deg,#fff8e6,#f9e3ce);border-radius:14px}
 .flower-palette{display:grid;grid-template-columns:repeat(10,minmax(24px,1fr));gap:7px;padding:8px 2px}

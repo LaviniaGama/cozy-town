@@ -22,6 +22,7 @@ Arrastar = girar câmera · Botão direito = mover câmera · Scroll = zoom · W
 - Ao abrir uma horta, as sementes aparecem separadas por grupos, como grãos, hortaliças e frutas.
 - Os painéis se ajustam à tela; quando o conteúdo é longo, a rolagem fica dentro do próprio painel.
 - A cada nível, novas missões e itens ficam disponíveis. O progresso é salvo automaticamente no navegador.
+- Nas cozinhas e oficinas, informe quantas unidades de uma receita deseja preparar. A quantidade é limitada apenas pelos ingredientes disponíveis; a fila não tem limite de tamanho.
 - Nas configurações, é possível pausar e acelerar o relógio, ocultar etiquetas, reduzir animações, alternar sombras e recentralizar a câmera.
 
 ## Estrutura

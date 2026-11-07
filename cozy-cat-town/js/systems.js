@@ -22,16 +22,19 @@ export function harvest(bid,i){const b=getB(bid),p=b&&b.plots[i];if(!p||now()<p.
 export function plantAll(bid,k){let n=0;const b=getB(bid);if(!b)return 0;for(let i=0;i<6;i++)if(plant(bid,i,k,true))n++;if(!n)toast('Nada plantado. Verifique sementes, nível e canteiros vazios.','bad');return n}
 export function harvestAll(bid){let n=0;for(let i=0;i<6;i++)if(harvest(bid,i))n++;return n}
 // production
-export const cap=b=>3+Math.floor(b.lv/2);
-export function cook(bid,rid){const b=getB(bid),r=RECIPES[rid];if(!b||!r||r.b!==b.type)return false;
+export const cap=()=>Infinity;
+export function cook(bid,rid,quantity=1){const b=getB(bid),r=RECIPES[rid];if(!b||!r||r.b!==b.type)return false;
  if(S.lv<r.lv){toast('Nível '+r.lv+' necessário','bad');return false}
- if((b.cur?1:0)+b.q.length>=cap(b)){toast('Fila cheia','bad');return false}
- if(!have(r.in)){toast('Faltam ingredientes','bad');return false}
- for(const[k,n]of Object.entries(r.in))S.inv[k]-=n;
- if(!b.cur)b.cur={r:rid,s:now(),e:now()+r.t*1000/speed(b)};else b.q.push(rid);emit('inv');return true}
+ if(!Number.isSafeInteger(quantity)||quantity<1){toast('Escolha uma quantidade válida.','bad');return false}
+ const needed=Object.fromEntries(Object.entries(r.in).map(([k,n])=>[k,n*quantity]));
+ if(!have(needed)){toast('Faltam ingredientes para essa quantidade.','bad');return false}
+ for(const[k,n]of Object.entries(needed))S.inv[k]-=n;
+ const t=now(),queuedCount=quantity-(b.cur?0:1);if(!b.cur)b.cur={r:rid,s:t,e:t+r.t*1000/speed(b)};
+ if(queuedCount>0){const last=b.q.length-1,queued=b.q[last];if(queued&&typeof queued==='object'&&queued.r===rid)queued.n+=queuedCount;else if(queued===rid)b.q[last]={r:rid,n:queuedCount+1};else b.q.push({r:rid,n:queuedCount})}
+ emit('inv');return true}
 export function tickB(b,t=now()){if(!b.cur)return;let n=0;
  while(b.cur&&t>=b.cur.e&&n++<60){const id=b.cur.r,s=b.cur.e;addItem(id,1);S.stats.cook++;if(id==='bread')S.stats.breadMade++;addXp(RECIPES[id].xp);emit('cooked',{b,id});b.cur=null;checkStory();
-  if(b.q.length){const nr=b.q.shift();b.cur={r:nr,s,e:s+RECIPES[nr].t*1000/speed(b)}}}}
+  if(b.q.length){const queued=b.q[0],nr=typeof queued==='string'?queued:queued.r;if(typeof queued==='object'){if(queued.n>1)queued.n--;else b.q.shift()}else b.q.shift();b.cur={r:nr,s,e:s+RECIPES[nr].t*1000/speed(b)}}}}
 export const upCost=b=>Math.round(120*b.lv*b.lv*(b.type==='restaurant'?1.5:1));
 export function upgrade(bid){const b=getB(bid);if(!b||b.lv>=5)return false;const c=upCost(b);
  if(S.coins<c){toast('Moedas insuficientes','bad');return false}S.coins-=c;b.lv++;emit('hud');toast('Melhorado para o nível '+b.lv+'! ✨');return true}
