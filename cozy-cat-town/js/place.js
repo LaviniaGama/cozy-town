@@ -196,8 +196,8 @@ export function startStored(id){
  begin(makeBuilding(b).g,{kind:'storedB',type:b.type,id,r:b.r||0,x:snap(b.x),z:snap(b.z)})}
 export function toggleMove(){
  if(P.moveEnabled){if(P.mode)cancel();exitSelection()}
- else{cancel();P.moveEnabled=true;P.selectionAction='move';clearSelection()}
- emit('mode')}
+ else{cancel();P.moveEnabled=true;P.selectionAction='move';if(P.selected.length){startGroupMove()} emit('mode')}
+}
 export function cancel(){const m=P.mode,wasGroup=m?.kind==='moveGroup';batchDrag=null;clearBatchGhost();hideSelectionBox();if(m&&!m.committed)restoreMoveSources(m);if(m?.source)m.source.visible=true;if(wasGroup)for(const item of m.items)if(item.source)item.source.visible=true;if(P.ghost){W.scene.remove(P.ghost);P.ghost=null}P.mode=null;if(wasGroup&&P.moveEnabled&&P.selected.length)showSelectionHighlights();emit('mode')}
 export function confirm(){
  const m=P.mode;if(!m)return;if(!m.ok){G.toast('Local inválido: afaste de construções, árvores e pisos ocupados.','bad');return}
