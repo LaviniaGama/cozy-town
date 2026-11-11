@@ -142,7 +142,7 @@ function updateSelectionFromPointer(e,finalize=false){
 }
 function selectInRect(e){updateSelectionFromPointer(e,true)}
 export function clearSelection(){P.selected=[];P.sel=null;P.confirmAction=null;clearSelectionHighlights();emit('mode')}
-export function setSelectionAction(action){if(!['move','store','sell'].includes(action))return;if(P.mode)cancel();P.moveEnabled=true;P.selectionAction=action;P.confirmAction=null;emit('mode');if(action!=='move')applySelectionAction();}
+export function setSelectionAction(action){if(!['move','store','sell'].includes(action))return;if(P.mode)cancel();P.moveEnabled=true;P.selectionAction=action;P.confirmAction=null;emit('mode');if(action==='move'){if(P.selected.length){startGroupMove();}return}applySelectionAction();}
 export function cancelSelectionConfirm(){P.confirmAction=null;emit('mode')}
 function exitSelection(){P.moveEnabled=false;clearSelection();emit('mode')}
 function itemData(selected){
