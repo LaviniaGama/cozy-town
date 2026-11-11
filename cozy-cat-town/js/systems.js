@@ -6,7 +6,16 @@ export const xpNeed=l=>40+l*35;
 export function addCoins(n){S.coins+=n;if(n>0)S.stats.earn+=n;emit('hud')}
 export function addXp(n){S.xp+=n;while(S.xp>=xpNeed(S.lv)){S.xp-=xpNeed(S.lv);S.lv++;addCoins(40*S.lv);emit('levelup',S.lv);const m=MILESTONES.find(x=>x.lv===S.lv);if(m){toast(`${m.e} Desbloqueado: ${m.n}!`);emit('milestone',m)}}emit('hud')}
 export function addItem(k,n=1){S.inv[k]=(S.inv[k]||0)+n;emit('inv')}
-export const have=i=>Object.entries(i).every(([k,n])=>(S.inv[k]||0)>=n);
+export const itemAliases=k=>{
+  const keys=[k];
+  if(k==='flour')keys.push('flour_sack');
+  if(k==='flour_sack')keys.push('flour');
+  return [...new Set(keys)];
+};
+export const inventoryCount=k=>itemAliases(k).reduce((sum,alias)=>sum+(S.inv[alias]||0),0);
+export const hasItem=(k,n=1)=>inventoryCount(k)>=n;
+export const consumeItems=needed=>{for(const[k,n]of Object.entries(needed)){let left=n;for(const alias of itemAliases(k)){const available=S.inv[alias]||0;if(!available)continue;const used=Math.min(available,left);S.inv[alias]-=used;left-=used;if(left<=0)break}if(left>0)return false}return true};
+export const have=i=>Object.entries(i).every(([k,n])=>inventoryCount(k)>=n);
 export const getB=id=>S.buildings.find(b=>b.id===id);
 export const nameOf=k=>(CROPS[k]||RECIPES[k]||GOODS[k]||{}).n||k;
 export const emojiOf=k=>(CROPS[k]||RECIPES[k]||GOODS[k]||{}).e||'❔';
@@ -28,7 +37,7 @@ export function cook(bid,rid,quantity=1){const b=getB(bid),r=RECIPES[rid];if(!b|
  if(!Number.isSafeInteger(quantity)||quantity<1){toast('Escolha uma quantidade válida.','bad');return false}
  const needed=Object.fromEntries(Object.entries(r.in).map(([k,n])=>[k,n*quantity]));
  if(!have(needed)){toast('Faltam ingredientes para essa quantidade.','bad');return false}
- for(const[k,n]of Object.entries(needed))S.inv[k]-=n;
+ if(!consumeItems(needed)){toast('Faltam ingredientes para essa quantidade.','bad');return false}
  const t=now(),queuedCount=quantity-(b.cur?0:1);if(!b.cur)b.cur={r:rid,s:t,e:t+r.t*1000/speed(b)};
  if(queuedCount>0){const last=b.q.length-1,queued=b.q[last];if(queued&&typeof queued==='object'&&queued.r===rid)queued.n+=queuedCount;else if(queued===rid)b.q[last]={r:rid,n:queuedCount+1};else b.q.push({r:rid,n:queuedCount})}
  emit('inv');return true}
@@ -138,8 +147,9 @@ export function tickCust(t=now()){const r=restaurant();if(!r)return;const max=Ma
   const c={id:'c'+cid++,kind:model,model,tint:null,want,slot,born:t,pat:150000};CUST.push(c);emit('custAdd',c)}}
 function rmCust(c,ok,reward){const i=CUST.indexOf(c);if(i>=0)CUST.splice(i,1);emit('custDel',{c,ok,reward})}
 export function serve(id){const c=CUST.find(x=>x.id===id),r=restaurant();if(!c||!r)return false;
- if(!(S.inv[c.want]>0)){toast('Faltando '+nameOf(c.want)+' no inventário','bad');return false}
- S.inv[c.want]--;const rw=Math.round(RECIPES[c.want].sell*1.5*(1+.15*(r.lv-1))*(r.cat?1.1:1));
+ if(!hasItem(c.want,1)){toast('Faltando '+nameOf(c.want)+' no inventário','bad');return false}
+ const used=consumeItems({[c.want]:1});if(!used){toast('Faltando '+nameOf(c.want)+' no inventário','bad');return false}
+ const rw=Math.round(RECIPES[c.want].sell*1.5*(1+.15*(r.lv-1))*(r.cat?1.1:1));
  addCoins(rw);addXp(RECIPES[c.want].xp+2);S.stats.serve++;rmCust(c,true,rw);emit('inv');toast('+'+rw+' 🪙 — cliente feliz!');return true}
 const DELIVERY_POOL=[
  {k:'wheat',lv:1},{k:'carrot',lv:1},{k:'bread',lv:1},{k:'tomato',lv:1},
@@ -147,9 +157,9 @@ const DELIVERY_POOL=[
  {k:'corn',lv:6},{k:'cornbread',lv:8},{k:'cardboard',lv:8},{k:'cheese',lv:9}
 ];
 export function deliveryOrder(){if(!S.delivery.current){if(S.delivery.completed===0)S.delivery.current={items:{wheat:1,carrot:1},created:now()};else{const pool=DELIVERY_POOL.filter(x=>x.lv<=S.lv).map(x=>x.k),picked=[];while(picked.length<2&&pool.length){const i=Math.random()*pool.length|0;picked.push(pool.splice(i,1)[0])}const items={};for(const k of picked)items[k]=1;S.delivery.current={items,created:now()}}}return S.delivery.current}
-export const canDeliver=()=>Object.entries(deliveryOrder().items).every(([k,n])=>(S.inv[k]||0)>=n);
+export const canDeliver=()=>Object.entries(deliveryOrder().items).every(([k,n])=>inventoryCount(k)>=n);
 export function deliverOrder(){if(S.lv<3){toast('O pelicano chega no nível 3.','bad');return false}const o=deliveryOrder();if(!canDeliver()){toast('Ainda faltam produtos para este pedido.','bad');return false}
- let reward=35,xp=12;for(const[k,n]of Object.entries(o.items)){S.inv[k]-=n;const d=CROPS[k]||RECIPES[k]||GOODS[k];reward+=d.sell*n;xp+=d.xp||0}
+ let reward=35,xp=12;for(const[k,n]of Object.entries(o.items)){if(!consumeItems({[k]:n})){toast('Ainda faltam produtos para este pedido.','bad');return false}const d=CROPS[k]||RECIPES[k]||GOODS[k];reward+=d.sell*n;xp+=d.xp||0}
  reward=Math.round(reward*1.5);S.delivery.completed++;S.delivery.current=null;S.stats.delivery++;addCoins(reward);addXp(xp);emit('inv');emit('delivery');checkStory();toast(`Pedido entregue! +${reward} moedas e +${xp} XP.`);return true}
 export function storyStep(){return STORY[Math.min(S.story,STORY.length-1)]}
 export function startStory(){if(S.story===0){S.story=1;emit('story');checkStory()} }
