@@ -216,6 +216,11 @@ export function confirm(){
  }
  else if(DECOR[m.type].form==='floor'){const old=S.decor.find(d=>DECOR[d.type]?.form==='floor'&&d.x===m.x&&d.z===m.z);if(old){if(!G.replaceFloor(old.id,m.type,m.r))return}else if(!G.placeDecor(m.type,m.x,m.z,m.r))return}
  else if(!G.placeDecor(m.type,m.x,m.z,m.r,m.decorColor))return;
+ if(m.kind==='d'&&!isBatchable(m.type)&&S.decoInv[m.type]>0){
+  const next=makeDecor(m.type,undefined,m.decorColor);
+  begin(next,{kind:m.kind,type:m.type,r:m.r,x:snapAt(m.type,0),z:snapAt(m.type,4),decorColor:m.decorColor});
+  return;
+ }
  cancel()}
 export function rotate(){
  if(P.mode){P.mode.r=(P.mode.r+1)%4;setGhost();return}

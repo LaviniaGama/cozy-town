@@ -168,11 +168,11 @@ const dayKey=t=>{const d=new Date(t);return `${d.getFullYear()}-${d.getMonth()+1
 export const dailyReady=()=>S.lv>=10&&S.daily.last!==dayKey(now());
 export function claimDaily(){if(!dailyReady())return false;const t=now(),y=new Date(t);y.setDate(y.getDate()-1);S.daily.streak=S.daily.last===dayKey(y)?S.daily.streak+1:1;S.daily.last=dayKey(t);const coins=100+Math.min(20,S.daily.streak-1)*25;addCoins(coins);addXp(25);emit('daily');toast(`PresenÃ§a diÃ¡ria: +${coins} moedas e +25 XP!`);return true}
 export const passProg=t=>S.stats[t.stat]||0;
-export function claimPass(id){if(S.lv<13)return false;const t=PASS_TASKS.find(x=>x.id===id);if(!t||S.passClaimed[id]||passProg(t)<t.n)return false;S.passClaimed[id]=1;addCoins(t.coins);addXp(t.xp);emit('pass');toast(`Passe fofinho: +${t.coins} moedas e +${t.xp} XP!`);return true}
+export function claimPass(id){if(S.lv<13)return false;const t=PASS_TASKS.find(x=>x.id===id);if(!t||S.passClaimed[id]||passProg(t)<t.n)return false;S.passClaimed[id]=1;addCoins(t.coins);addXp(t.xp);emit('pass');toast(`Passe: +${t.coins} moedas e +${t.xp} XP!`);return true}
 // missions
 export const prog=m=>m.k==='lv'?S.lv:m.k==='cats'?Object.keys(S.cats).length:(S.stats[m.k]||0);
 export function claim(id){const m=[...activeMissions(S.lv),...ACH].find(x=>x.id===id);if(!m||S.claimed[id]||prog(m)<m.n)return false;
  S.claimed[id]=1;addCoins(m.r);addXp(10);toast('Recompensa: +'+m.r+' 🪙');emit('claim');return true}
 export const claimable=()=>[...activeMissions(S.lv),...ACH].filter(m=>!S.claimed[m.id]&&prog(m)>=m.n).length;
 // bonus cat
-export function money(){const v=100+S.lv*40;addCoins(v);toast('Gatinho do dinheiro! +'+v+' 🪙');return v}
+export function money(){const v=100+S.lv*40;addCoins(v);toast('Dinheiro! +'+v+' 🪙');return v}

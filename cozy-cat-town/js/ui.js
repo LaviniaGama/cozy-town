@@ -30,8 +30,12 @@ function farmH(b){const t=Date.now(),cropEntries=Object.entries(CROPS),grouped=c
   else h+=`<div class="plot">${CROPS[p.c].e}${bar(G.growProg(p,t))}<small>${fmt(p.end-t)}</small></div>`});
  return h+`</div><div class="row"><button data-a="plantAll" data-id="${b.id}">🌱 Plantar tudo</button><button data-a="harvestAll" data-id="${b.id}">✂ Colher tudo</button></div><div class="sub">Rende ${2+(b.lv>=3?1:0)+(b.lv>=5?1:0)} por colheita</div>`}
 function prodH(b){const t=Date.now(),q=ui.recipeQuery.toLowerCase();let h=`<label class="recipe-search">🔎 <input type="search" data-role="recipe-filter" placeholder="Buscar entre 100 receitas" value="${ui.recipeQuery.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}"></label>`;
- if(b.cur){const r=RECIPES[b.cur.r];h+=`<div class="card2">Preparando ${r.e} <b>${r.n}</b>${bar((t-b.cur.s)/(b.cur.e-b.cur.s))}<small>${fmt(b.cur.e-t)}</small></div>`}else h+='<div class="sub">Cozinha livre — escolha uma receita!</div>';
- if(b.q.length){const queued=new Map();for(const item of b.q){const id=typeof item==='string'?item:item.r;queued.set(id,(queued.get(id)||0)+(typeof item==='string'?1:item.n))}h+=`<div class="sub">Na fila: ${[...queued].map(([id,n])=>`${RECIPES[id].e} ×${n}`).join(' · ')}</div>`}
+ if(b.cur||b.q.length){
+  const preparing=[];
+  if(b.cur){const r=RECIPES[b.cur.r];preparing.push({id:b.cur.r,progress:(t-b.cur.s)/(b.cur.e-b.cur.s),label:`${r.e} <b>${r.n}</b>`,badge:fmt(b.cur.e-t),current:true})}
+  for(const item of b.q){const id=typeof item==='string'?item:item.r;const n=typeof item==='object'?item.n:1;const seen=preparing.some(p=>p.id===id);if(seen)continue;preparing.push({id,label:`${RECIPES[id].e} <b>${RECIPES[id].n}</b>`,badge:n>1?`×${n}`:'Na fila',current:false})}
+  h+=`<div class="card2">${preparing.map(p=>`<div>Preparando ${p.label}${p.current?`${bar(p.progress)}<small>${p.badge}</small>`:`<small>${p.badge}</small>`}</div>`).join('<br>')}</div>`;
+ }else h+='<div class="sub">Cozinha livre — escolha uma receita!</div>';
  for(const[k,r]of Object.entries(RECIPES)){if(r.b!==b.type)continue;const lock=S.lv<r.lv,ingredients=Object.entries(r.in),batchMax=ingredients.length?Math.min(Number.MAX_SAFE_INTEGER,...ingredients.map(([item,n])=>Math.floor(G.inventoryCount(item)/n))):null,batchKey=`${b.id}:${k}`,amount=batchMax===null?ui.cookAmounts[batchKey]||1:Math.min(ui.cookAmounts[batchKey]||1,batchMax||1),max=batchMax===null?'':`max="${batchMax}"`;
   h+=`<div class="item recipe-row ${lock?'lock':''}" data-recipe-name="${r.n.toLowerCase()}" ${r.n.toLowerCase().includes(q)?'':'hidden'}><span class="em">${r.e}</span><div><b>${r.n}</b><br><small>${lock?'🔒 Nível '+r.lv:ing(r.in)+' · ⏱'+fmt(r.t*1000/G.speed(b))+' · 🪙'+r.sell}</small></div>${lock?'':`<label class="cook-count">× <input type="number" data-role="cook-quantity" data-id="${b.id}" data-k="${k}" aria-label="Quantidade de ${r.n}" min="1" step="1" ${max} value="${amount}" ${batchMax!==null&&batchMax<1?'disabled':''}></label><button data-a="cook" data-id="${b.id}" data-k="${k}" ${batchMax!==null&&batchMax<1?'disabled':''}>Cozinhar</button>`}</div>`}
  return h}
@@ -68,11 +72,11 @@ const decorCategories=[
  {id:'lights',label:'💡 Luzes'},
  {id:'seating',label:'🪑 Descanso'},
  {id:'garden',label:'🌿 Jardim'},
- {id:'Bichinhos da Vila',label:'🐾 Bichinhos'},
+ {id:'Vila',label:'🐾 Vila'},
  {id:'Cantinho Encantado',label:'✨ Encanto'},
  {id:'Praça da Vila',label:'🏘️ Praça'},
  {id:'Festa e Música',label:'🎉 Festa'},
- {id:'Coleção de Patinhas',label:'🐈 Coleção'}
+ {id:'Coleção',label:'🐈 Coleção'}
 ];
 const decorCategory=d=>d.group||({flower:'flowers',floor:'floors',tree:'trees',pine:'trees',pot:'pots',urn:'pots',lamp:'lights',lantern:'lights',crystal:'lights',bench:'seating',swing:'seating'})[d.form]||'garden';
 const flowerTypes=()=>{const found=new Map();for(const[k,d]of Object.entries(DECOR))if(d.form==='flower'&&!found.has(d.shape))found.set(d.shape,[k,d]);return[...found.values()]};
@@ -113,7 +117,7 @@ const deliveryH=()=>{if(S.lv<3)return '<div class="card2"><h4>O pelicano está a
  h+=entries.map(([k,n])=>{const item=CROPS[k]||RECIPES[k],have=S.inv[k]||0;return `<div class="item ${have<n?'lock':''}"><span class="em">${item.e}</span><div><b>${item.n}</b><br><small>Pedido: ${n} · Você tem: ${have}</small></div></div>`}).join('');
  return h+`<button class="big" data-a="deliver" ${ready?'':'disabled'}>📦 Entregar pedido</button><div class="sub">Pedidos concluídos: ${S.delivery.completed}</div>`};
 const dailyH=()=>{const ready=G.dailyReady();return `<div class="card2"><h4>Presença diária · sequência ${S.daily.streak}</h4><p>Volte à vila todos os dias para receber moedas e experiência.</p><button class="big" data-a="daily" ${ready?'':'disabled'}>${ready?'Resgatar recompensa de hoje':'Recompensa de hoje já recebida'}</button></div>`};
-const passH=()=>'<h4>Passe fofinho</h4>'+PASS_TASKS.map(t=>{const n=G.passProg(t),done=S.passClaimed[t.id];return `<div class="item ${done?'lock':''}"><div><b>${t.t}</b>${bar(n/t.n)}<small>${Math.min(n,t.n)}/${t.n} · ${t.coins} moedas + ${t.xp} XP</small></div>${done?'✓':`<button data-a="passClaim" data-id="${t.id}" ${n>=t.n?'':'disabled'}>Resgatar</button>`}</div>`}).join('');
+const passH=()=>'<h4>Passe</h4>'+PASS_TASKS.map(t=>{const n=G.passProg(t),done=S.passClaimed[t.id];return `<div class="item ${done?'lock':''}"><div><b>${t.t}</b>${bar(n/t.n)}<small>${Math.min(n,t.n)}/${t.n} · ${t.coins} moedas + ${t.xp} XP</small></div>${done?'✓':`<button data-a="passClaim" data-id="${t.id}" ${n>=t.n?'':'disabled'}>Resgatar</button>`}</div>`}).join('');
 const journeyPage=()=>journeyH()+(S.lv>=10?dailyH():'')+(S.lv>=13?passH():'');
 export function render(){const p=ui.panel;if(!p)return;let t='',h='';
  if(p.type==='b'){const b=G.getB(p.id);if(!b)return close();t=bname(b);h=bPanel(b)}

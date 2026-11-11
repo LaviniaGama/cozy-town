@@ -11,7 +11,7 @@ export const RECIPES={
  tomatosoup:{n:'Sopa de Tomate',e:'🍲',b:'kitchen',in:{tomato:2},t:25,sell:30,xp:8,lv:1},
  cornchowder:{n:'Creme de Milho',e:'🥘',b:'kitchen',in:{corn:2,carrot:1},t:40,sell:55,xp:12,lv:6},
  pumpkinsoup:{n:'Sopa de Abóbora',e:'🍜',b:'kitchen',in:{pumpkin:2},t:50,sell:70,xp:16,lv:3},
- bread:{n:'Pão Fofinho',e:'🍞',b:'bakery',in:{flour:1},t:15,sell:14,xp:4,lv:4},
+ bread:{n:'Pão',e:'🍞',b:'bakery',in:{flour:1},t:15,sell:14,xp:4,lv:4},
  muffin:{n:'Muffin de Milho',e:'🧁',b:'bakery',in:{corn:1,wheat:1},t:25,sell:30,xp:8,lv:6},
  cake:{n:'Bolo de Morango',e:'🍰',b:'bakery',in:{strawberry:2,wheat:1},t:40,sell:55,xp:12,lv:2},
  pie:{n:'Torta de Abóbora',e:'🥧',b:'bakery',in:{pumpkin:1,wheat:2},t:50,sell:70,xp:16,lv:3}};
@@ -31,7 +31,7 @@ export const DECOR={
  sakura:{n:'Cerejeira',e:'🌸',price:90,w:1.6,d:1.6,desc:'Árvore delicada coberta de flores rosadas.'},
  mailbox:{n:'Caixa de Correio',e:'📮',price:35,w:.7,d:.7,desc:'Caixa azul com bandeirinha vermelha.'},
  picnic:{n:'Piquenique',e:'🧺',price:70,w:1.8,d:1.8,desc:'Toalha xadrez com cestinha e lanchinhos.'},
- statue:{n:'Estátua de Gato',e:'🗿',price:150,w:.9,d:.9,desc:'Pequena estátua branca de um gatinho.'},
+ statue:{n:'Estátua de Gato',e:'🗿',price:150,w:.9,d:.9,desc:'Estátua branca.'},
  parasol:{n:'Ombrelone',e:'⛱️',price:80,w:2.2,d:2.2,desc:'Guarda-sol amarelo com mesinha lateral.'},
  rainbow:{n:'Arco-íris',e:'🌈',price:120,w:3.2,d:1.2,desc:'Arco colorido para decorar um caminho.'}};
 const EXTRA_DECOR=[
@@ -46,7 +46,7 @@ const EXTRA_DECOR=[
  ['floor_sand','Piso de areia','🏖️',8,'floor',0xe8c98d,0xb28a4f,1,1,'Bloco de areia dourada com conchinhas.'],
  ['floor_checker','Piso xadrez pastel','🔲',16,'floor',0xf6e8d1,0xc99bb4,1,1,'Lajota quadriculada em tons suaves.'],
  ['tree_rose','Árvore de copa redonda','🌳',110,'tree',0xff9fca,0xffd1e4,1.8,1.8,'Árvore de copa redonda em camadas, com tronco e folhas facetados.'],
- ['tree_lilac','Árvore de copa fofa','🌳',115,'tree',0xb69be8,0xe1d2ff,1.8,1.8,'Árvore de copa fofa em três níveis, com tronco e folhas facetados.'],
+ ['tree_lilac','Árvore de copa','🌳',115,'tree',0xb69be8,0xe1d2ff,1.8,1.8,'Árvore de copa em três níveis, com tronco e folhas facetados.'],
  ['tree_sky','Árvore de copa em níveis','🌳',115,'tree',0x70bfe8,0xbcecff,1.8,1.8,'Árvore com copa macia em três níveis, tronco e folhas facetados.'],
  ['tree_pine','Pinheiro','🌲',125,'pine',0x4e9a72,0xdaf0c5,1.8,1.8,'Pinheiro em camadas com tronco facetado e estrela no topo.'],
  ['tree_green','Árvore de copa arredondada','🌳',100,'tree',0x68b879,0xa8e5a0,1.8,1.8,'Árvore de copa arredondada e volumosa, com tronco facetado.'],
@@ -58,7 +58,7 @@ const EXTRA_DECOR=[
  ['pot_urn','Ânfora de jardim','🏺',48,'urn',0xb486c2,0xffc4dc,1,1,'Ânfora decorativa com alças e buquê.'],
  ['pot_mosaic','Vaso mosaico colorido','🪴',55,'pot',0x69aeb1,0xf1a9c5,1,1,'Vaso facetado com mosaico e flores.'],
  ['pot_moon','Vaso meia-lua','🌙',52,'pot',0x7776ae,0xffe28a,1,1,'Vaso em forma de lua com flor dourada.'],
- ['pot_berry','Vaso de moranguinhos','🍓',46,'pot',0xe87979,0xfff0cc,1,1,'Vaso decorado com pequenas frutinhas.'],
+ ['pot_berry','Vaso de morango','🍓',46,'pot',0xe87979,0xfff0cc,1,1,'Vaso decorado com frutos.'],
  ['pot_white','Vaso branco de porcelana','🏺',44,'urn',0xf3eee6,0x9dc9d1,.9,.9,'Porcelana creme com detalhes azulados.'],
  ['pot_giant','Vaso gigante de jardim','🪴',82,'pot',0xbf815f,0xc285d3,1.5,1.5,'Grande vaso com borda, terra e flores altas.'],
  ['lamp_moon','Poste de lua','🌙',72,'lamp',0x8679c2,0xffe28a,.7,.7,'Luminária de jardim com lua crescente.'],
@@ -71,13 +71,13 @@ const EXTRA_DECOR=[
  ['bench_mint','Banco menta','🪑',58,'bench',0x79bfa0,0xd5f0c4,1.6,.8,'Banco verde-menta com assento acolchoado.'],
  ['bench_stone','Banco de pedra','🪨',62,'bench',0xb1a8ad,0xe2d6c6,1.6,.8,'Banco de pedra clara com pés esculpidos.'],
  ['bench_swing','Balanço de jardim','🎠',98,'swing',0xc68a55,0xf2c3d7,1.8,1.2,'Balanço chibi com correntes e assento.'],
- ['topiary_cat','Topiaria de gatinho','🐱',88,'topiary',0x68a96f,0xffd276,1.2,1.2,'Arbusto podado em formato de gatinho.'],
+ ['topiary_cat','Topiaria','🐱',88,'topiary',0x68a96f,0xffd276,1.2,1.2,'Arbusto podado em formato.'],
  ['topiary_heart','Topiaria de coração','💚',78,'topiary',0x71b77b,0xff8caa,1.1,1.1,'Coração verde podado com laço rosa.'],
  ['topiary_bunny','Topiaria de coelhinho','🐰',84,'topiary',0x8fc77e,0xffd6e5,1.2,1.2,'Arbusto de coelhinho com orelhas altas.'],
  ['topiary_mushroom','Topiaria cogumelo','🍄',76,'mushroom',0xc97068,0xf5e2c6,1,1,'Cogumelo decorativo com pintas e base musgosa.'],
- ['birdbath','Bebedouro de passarinhos','🐦',74,'birdbath',0xb9c8d1,0x87c9d7,1.2,1.2,'Bacia elevada com água azul e passarinho.'],
+ ['birdbath','Bebedouro','🐦',74,'birdbath',0xb9c8d1,0x87c9d7,1.2,1.2,'Bacia elevada com água azul.'],
  ['garden_arch','Arco de flores','🌷',115,'arch',0x8cbf86,0xf5a9c5,2.4,.8,'Arco de entrada coberto de flores.'],
- ['mushroom_house','Casinha cogumelo','🍄',130,'mushroom',0xd77b70,0xffedc4,1.6,1.6,'Pequena casinha de cogumelo com porta redonda.'],
+ ['mushroom_house','Casinha de cogumelo','🍄',130,'mushroom',0xd77b70,0xffedc4,1.6,1.6,'Casinha de cogumelo com porta redonda.'],
  ['birdhouse','Casinha de passarinho','🐤',68,'birdhouse',0xe2a85c,0x85c7d7,.8,.8,'Casinha de madeira com telhado colorido.'],
  ['garden_clock','Relógio de jardim','🕰️',82,'clock',0x8cae8c,0xffe28a,.8,.8,'Relógio redondo com ponteiros e suporte.'],
  ['garden_well','Poço de desejos','🪣',110,'well',0xb49b83,0x82c4d2,1.6,1.6,'Poço de pedra com telhadinho e balde.'],
@@ -118,16 +118,16 @@ const FLOOR_COLLECTION=[
 for(const[id,n,e,shape,color,accent]of FLOOR_COLLECTION)DECOR[id]={n,e,price:11+(FLOOR_COLLECTION.findIndex(row=>row[0]===id)%5)*2,w:1,d:1,form:'floor',shape,color,accent,desc:`${n} com acabamento facetado para caminhos e pátios.`};
 const NOVELTY_DECOR=[
  ['Bichinhos da Vila','🐾',[
-  ['Gatinho jardineiro','🐱','cat',0xe8a88a,0xffd77d,'Um gatinho chibi de jardineiro com chapéu, jardineira e focinho pintado.'],
+  ['Jardineiro','🐱','cat',0xe8a88a,0xffd77d,'Figura de jardineiro com chapéu, jardineira e focinho pintado.'],
   ['Coelhinha florista','🐰','rabbit',0xf3d9d4,0xf49ab4,'Coelhinha com orelhas altas segurando uma flor facetada.'],
   ['Raposa do bosque','🦊','fox',0xe77e48,0xffe1ad,'Raposa laranja com cauda grande de ponta creme.'],
   ['Corujinha sábia','🦉','owl',0x9078ad,0xffdc83,'Coruja lilás com olhos grandes, asas e peninhas no topo.'],
   ['Ursinho mel','🧸','cat',0xb47d59,0xffd786,'Ursinho redondo com focinho claro e gravatinha de mel.'],
   ['Pinguim de cachecol','🐧','owl',0x66758d,0xf28da7,'Pinguim de barriga clara com cachecol coral.'],
-  ['Ovelhinha saltitante','🐑','rabbit',0xe9e3d6,0xc6b4df,'Ovelhinha de lã fofinha, orelhas e patinhas curtas.'],
+  ['Saltitante','🐑','rabbit',0xe9e3d6,0xc6b4df,'Figura de ovelha com orelhas e patas curtas.'],
   ['Sapo príncipe','🐸','cat',0x78b879,0xffd76f,'Sapo verde coroado com olhos saltados e sorriso simpático.'],
   ['Raposa-das-neves','🦊','fox',0xe6edf2,0xa9d6ec,'Raposa branca com cauda azul-gelo e orelhas rosadas.'],
-  ['Gatinho astronauta','🐈','owl',0x9ca9c8,0xffe28a,'Gatinho espacial com capacete redondo e visor dourado.']
+  ['Astronauta','🐈','owl',0x9ca9c8,0xffe28a,'Figura espacial com capacete redondo e visor dourado.']
  ]],
  ['Cantinho Encantado','✨',[
   ['Cogumelo casa rosa','🍄','mushroom',0xe77e91,0xfff0cc,'Casinha de cogumelo com porta redonda, janelinha e pintas.'],
@@ -145,12 +145,12 @@ const NOVELTY_DECOR=[
   ['Quiosque de limonada','🍋','kiosk',0xf2d46f,0x8abf78,'Balcão listrado com toldo, jarra e placa de limonada.'],
   ['Carrinho de sorvete','🍦','kiosk',0xf49ab4,0x8bc9e8,'Carrinho pastel com toldinho, rodas e sorvetes coloridos.'],
   ['Banca de flores','💐','kiosk',0x9fbe81,0xf28fab,'Banca de madeira com cobertura e buquês à mostra.'],
-  ['Correio dos gatinhos','📮','mailbox',0x82b9d1,0xe87979,'Caixa de correio com bandeira levantada e selo de pata.'],
+  ['Correio','📮','mailbox',0x82b9d1,0xe87979,'Caixa de correio com bandeira levantada.'],
   ['Telefone vintage','☎️','mailbox',0xe4a864,0x9d7bd1,'Telefone público retrô com disco e cobertura arredondada.'],
   ['Placa Café do Gato','☕','kiosk',0x9b704d,0xffd6a1,'Plaquinha de café com xícara em relevo e suporte de madeira.'],
   ['Coreto de jardim','🎠','kiosk',0x8ab986,0xf5c0d0,'Coreto octogonal com colunas, telhado e bandeirolas.'],
   ['Poço de desejos azul','🪣','fountain',0x8eaaa9,0x85cbdf,'Poço de pedra azul com balde pendurado e água brilhante.'],
-  ['Bebedouro de passarinhos','🐦','fountain',0xc7d1d1,0x8cd0dd,'Bacia de água sobre pedestal com pequeno passarinho.'],
+  ['Bebedouro','🐦','fountain',0xc7d1d1,0x8cd0dd,'Bacia de água sobre pedestal.'],
   ['Banco de praça coração','💗','cat',0xd88da1,0xffd9e1,'Banco acolchoado com encosto em formato de coração.']
  ]],
  ['Festa e Música','🎉',[
@@ -170,12 +170,12 @@ const NOVELTY_DECOR=[
   ['Coelho guardião','🐇','rabbit',0xe6d6c6,0xa6cde0,'Coelho em pé com orelhas longas e laço no pescoço.'],
   ['Raposa guardiã','🦊','fox',0xc57552,0xffdcb0,'Raposa sentada com cauda enrolada e peito creme.'],
   ['Coruja guardiã','🦉','owl',0x8c7c9a,0xffdf83,'Coruja sobre um toco com asas e olhos dourados.'],
-  ['Gatinho da lua','🌙','cat',0xaaa3ce,0xffe79a,'Gatinho sentado abraçando uma lua crescente.'],
-  ['Gatinho da sorte','🐱','cat',0xf1d17c,0xf28fa5,'Maneki-neko chibi com patinha erguida e coleira.'],
+  ['Da lua','🌙','cat',0xaaa3ce,0xffe79a,'Figura sentada abraçando uma lua crescente.'],
+  ['Da sorte','🐱','cat',0xf1d17c,0xf28fa5,'Figura com patinha erguida e coleira.'],
   ['Raposa das flores','🌷','fox',0xe89b71,0xf3a9c4,'Raposa com grinalda de flores e cauda pontilhada.'],
   ['Coelho da cenoura','🥕','rabbit',0xe2d6c5,0xf29a57,'Coelhinho segurando uma cenoura grande com folhas.'],
   ['Coruja viajante','🧭','owl',0x9c806b,0x8cc4d5,'Coruja com mini mochila e bússola dourada.'],
-  ['Gato pescador','🐟','cat',0x8d9fb5,0x74c9e6,'Gatinho com chapéu de pescador e peixinho azul.']
+  ['Pescador','🐟','cat',0x8d9fb5,0x74c9e6,'Figura com chapéu de pescador e peixe azul.']
  ]]
 ];
 let noveltyIndex=0;
@@ -339,7 +339,7 @@ export const MISSIONS=[
  {id:'m1',t:'Colher 10 plantações',k:'harvest',n:10,r:60},
  {id:'m2',t:'Cozinhar 5 pratos',k:'cook',n:5,r:80},
  {id:'m3',t:'Servir 5 clientes',k:'serve',n:5,r:100},
- {id:'m4',t:'Fazer carinho em 5 gatinhos',k:'pet',n:5,r:50},
+ {id:'m4',t:'Fazer carinho em 5',k:'pet',n:5,r:50},
  {id:'m5',t:'Alcançar o nível 3',k:'lv',n:3,r:120},
  {id:'m6',t:'Construir 1 prédio',k:'build',n:1,r:150},
  {id:'m7',t:'Colocar 3 decorações',k:'place',n:3,r:90}];
@@ -353,7 +353,7 @@ export const MILESTONES=[
  {lv:8,n:'Ferramentas e pão de milho',e:'🧰',d:'Loja de ferramentas, caixas e nova receita.'},
  {lv:9,n:'Queijo e entregas',e:'🧀',d:'Amplie sua produção e receba pedidos maiores.'},
  {lv:10,n:'Presença diária',e:'🎁',d:'Recompensas por voltar à cidade.'},
- {lv:13,n:'Passe fofinho',e:'🎟️',d:'Trilha de missões e recompensas.'},
+ {lv:13,n:'Passe',e:'🎟️',d:'Trilha de missões e recompensas.'},
  {lv:16,n:'Eventos especiais',e:'🎉',d:'Atividades sazonais para a comunidade.'},
  {lv:19,n:'Estante mágica',e:'📚',d:'Organize coleções de gatos e acessórios.'},
  {lv:20,n:'Cidade em expansão',e:'🏙️',d:'Novas áreas, produção e decoração.'},
@@ -362,10 +362,10 @@ export const MILESTONES=[
  {lv:50,n:'Cidade lendária',e:'👑',d:'Aproveite todos os sistemas e complete sua coleção.'}
 ];
 export const STORY=[
- {id:'welcome',t:'Sua pequena propriedade',d:'Você recebeu uma propriedade tranquila e três gatinhos únicos vieram conhecer o lugar.',goal:'Abra a jornada para começar.',stat:null},
+ {id:'welcome',t:'Sua propriedade',d:'Você recebeu uma propriedade tranquila e três visitantes vieram conhecer o lugar.',goal:'Abra a jornada para começar.',stat:null},
  {id:'plant',t:'Plante trigo',d:'Toque na horta, escolha trigo e plante uma semente.',goal:'Plante trigo uma vez.',stat:'wheatPlanted',n:1},
  {id:'harvest',t:'Faça a primeira colheita',d:'Espere o trigo crescer e toque no canteiro pronto.',goal:'Colha trigo uma vez.',stat:'wheatHarvest',n:1},
- {id:'bake',t:'Prepare uma mercadoria',d:'Transforme trigo em farinha e use a farinha para assar pão fofinho.',goal:'Produza pão uma vez.',stat:'breadMade',n:1},
+ {id:'bake',t:'Prepare uma mercadoria',d:'Transforme trigo em farinha e use a farinha para assar pão.',goal:'Produza pão uma vez.',stat:'breadMade',n:1},
  {id:'delivery',t:'Conheça o pelicano',d:'Leve os produtos pedidos ao pelicano e receba moedas e experiência.',goal:'Complete uma entrega.',stat:'delivery',n:1},
  {id:'done',t:'A vila está crescendo!',d:'Plante, fabrique mercadorias e conclua pedidos para continuar avançando.',goal:'Jornada inicial concluída.',stat:null}
 ];
