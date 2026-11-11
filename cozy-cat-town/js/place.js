@@ -142,7 +142,7 @@ function updateSelectionFromPointer(e,finalize=false){
 }
 function selectInRect(e){updateSelectionFromPointer(e,true)}
 export function clearSelection(){P.selected=[];P.sel=null;P.confirmAction=null;clearSelectionHighlights();emit('mode')}
-export function setSelectionAction(action){if(!['move','store','sell'].includes(action))return;if(P.mode)cancel();P.moveEnabled=true;P.selectionAction=action;P.confirmAction=null;emit('mode')}
+export function setSelectionAction(action){if(!['move','store','sell'].includes(action))return;if(P.mode)cancel();P.moveEnabled=true;P.selectionAction=action;P.confirmAction=null;emit('mode');if(action!=='move')applySelectionAction();}
 export function cancelSelectionConfirm(){P.confirmAction=null;emit('mode')}
 function exitSelection(){P.moveEnabled=false;clearSelection();emit('mode')}
 function itemData(selected){
@@ -165,8 +165,6 @@ export function applySelectionAction(){
  if(!items.length){G.toast('Selecione pelo menos um item primeiro.','bad');return}
  if(P.selectionAction==='move'){startGroupMove();return}
  const action=P.selectionAction;
- if(P.confirmAction!==action){P.confirmAction=action;emit('mode');return}
- P.confirmAction=null;
  let count=0;
  for(const item of items){
   const ok=action==='store'?(item.kind==='b'?G.storeBuilding(item.id):G.storeDecor(item.id)):(item.kind==='b'?G.sellBuilding(item.id):G.sellDecor(item.id));
