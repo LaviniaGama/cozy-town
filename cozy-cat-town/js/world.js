@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import { normalizeWheelDelta } from './camera.js';
 export const W={night:0};
 export const GRAD=(()=>{const t=new THREE.DataTexture(new Uint8Array([105,185,255]),3,1,THREE.RedFormat);t.minFilter=t.magFilter=THREE.NearestFilter;t.needsUpdate=true;return t})();
 export const toonMat=(c,o={})=>new THREE.MeshToonMaterial({color:c,gradientMap:GRAD,...o});
@@ -31,7 +32,13 @@ const SKY={n:new THREE.Color(0x2a3270),d:new THREE.Color(0xbfe6ff),u:new THREE.C
 export function init(canvas){W.canvas=canvas;const r=new THREE.WebGLRenderer({canvas,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,1.75));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
  const scene=new THREE.Scene();scene.background=new THREE.Color(0xbfe6ff);scene.fog=new THREE.Fog(0xbfe6ff,130,270);
  const cam=new THREE.PerspectiveCamera(38,1,.5,600);cam.position.set(30,23,30);
- const ctl=new OrbitControls(cam,canvas);ctl.enableDamping=true;ctl.dampingFactor=.08;ctl.minDistance=14;ctl.maxDistance=135;ctl.minPolarAngle=.48;ctl.maxPolarAngle=1.38;ctl.enablePan=true;ctl.mouseButtons.LEFT=THREE.MOUSE.ROTATE;ctl.target.set(0,0,1);
+ const ctl=new OrbitControls(cam,canvas);ctl.enableDamping=true;ctl.dampingFactor=.08;ctl.minDistance=14;ctl.maxDistance=135;ctl.minPolarAngle=.48;ctl.maxPolarAngle=1.38;ctl.enablePan=true;ctl.mouseButtons.LEFT=THREE.MOUSE.ROTATE;ctl.zoomSpeed=.45;ctl.target.set(0,0,1);
+ canvas.addEventListener('wheel',(event)=>{
+  const deltaY=normalizeWheelDelta(event.deltaY ?? event.deltaX ?? 0);
+  if(deltaY===0)return;
+  event.preventDefault();
+  Object.defineProperty(event,'deltaY',{value:deltaY,configurable:true});
+ },{passive:false});
  hemi=new THREE.HemisphereLight(0xffffff,0xc9e8b0,.9);scene.add(hemi);
  sun=new THREE.DirectionalLight(0xfff1d6,1.7);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);const sc=sun.shadow.camera;sc.left=sc.bottom=-64;sc.right=sc.top=64;sc.near=1;sc.far=180;sun.shadow.bias=-.0006;scene.add(sun,sun.target);
  Object.assign(W,{renderer:r,scene,cam,ctl});
